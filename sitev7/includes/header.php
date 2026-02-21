@@ -44,7 +44,9 @@ $pagina_atual = basename($_SERVER['PHP_SELF'], '.php');
                             class="level-icon"><?= ['🌱', '🌿', '🍃', '🔥', '⚡', '💎', '🏆', '👑', '🌟', '🐉'][min($usuario['nivel'] - 1, 9)] ?></span>
                         <span class="level-text">Lv.<?= $usuario['nivel'] ?></span>
                     </a>
-                    <a href="api/auth/logout.php" class="header-btn" title="Sair">
+                    <!-- Notification Button (Injected via JS common.js to avoid duplication) -->
+                    <!-- Logout (Hidden on mobile via CSS) -->
+                    <a href="api/auth/logout.php" class="header-btn desktop-only" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 <?php else: ?>

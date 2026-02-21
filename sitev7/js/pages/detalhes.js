@@ -50,7 +50,7 @@ const DetalhesPage = {
 
         container.innerHTML = `
             <!-- HERO -->
-            <div class="details-hero" style="background-image: url('${anime.image}')">
+            <div class="details-hero" style="background-image: url('${anime.banner}')">
                 <div class="details-hero-overlay"></div>
             </div>
             

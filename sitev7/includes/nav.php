@@ -6,7 +6,8 @@
 
 $pagina_atual = $pagina_atual ?? basename($_SERVER['PHP_SELF'], '.php');
 
-function navActive($pagina, $atual) {
+function navActive($pagina, $atual)
+{
     return $pagina === $atual ? 'active' : '';
 }
 ?>
@@ -40,9 +41,9 @@ function navActive($pagina, $atual) {
     <a href="#" class="nav-item" onclick="goToRandomAnime(); return false;">
         <i class="fas fa-dice"></i><span>Aleatório</span>
     </a>
-    
+
     <div class="nav-divider"></div>
-    
+
     <div class="theme-selector" id="theme-selector"></div>
 </nav>
 
@@ -66,7 +67,13 @@ function navActive($pagina, $atual) {
             <a href="favoritos.php"><i class="fas fa-star"></i> Favoritos</a>
             <a href="assistindo.php"><i class="fas fa-play-circle"></i> Assistindo</a>
             <a href="calculadora.php"><i class="fas fa-calculator"></i> Calculadora</a>
+            <a href="calculadora.php"><i class="fas fa-calculator"></i> Calculadora</a>
             <a href="estatisticas.php"><i class="fas fa-chart-bar"></i> Estatísticas</a>
+            <a href="#" onclick="goToRandomAnime(); return false;"><i class="fas fa-dice"></i> Aleatório</a>
+            <hr style="margin: 5px 0; border: 0; border-top: 1px solid var(--border-color);">
+            <?php if (isset($usuario) && $usuario): ?>
+                <a href="api/auth/logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            <?php endif; ?>
         </div>
     </div>
 </nav>

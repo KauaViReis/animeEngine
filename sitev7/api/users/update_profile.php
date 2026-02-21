@@ -61,6 +61,19 @@ if (isset($data['perfil_publico'])) {
     $updates[] = "perfil_publico = $publico";
 }
 
+// Redes Sociais
+if (isset($data['redes_sociais']) && is_array($data['redes_sociais'])) {
+    $allowed_socials = ['discord', 'twitter', 'instagram', 'youtube', 'twitch'];
+    $socials = [];
+    foreach ($allowed_socials as $network) {
+        if (isset($data['redes_sociais'][$network])) {
+            $socials[$network] = substr(strip_tags($data['redes_sociais'][$network]), 0, 100);
+        }
+    }
+    $socials_json = escape($conn, json_encode($socials));
+    $updates[] = "redes_sociais = '$socials_json'";
+}
+
 if (empty($updates)) {
     jsonError('Nada para atualizar');
 }

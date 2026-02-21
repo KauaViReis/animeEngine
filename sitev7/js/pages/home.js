@@ -9,10 +9,10 @@ const HomePage = {
      */
     async init() {
         console.log('🏠 Loading Home Page...');
-        
+
         // Renderizar widget de metas (síncrono)
         this.renderGoalsWidget();
-        
+
         // Carregar dados em paralelo
         await Promise.all([
             this.loadHeroBanner(),
@@ -22,7 +22,7 @@ const HomePage = {
             this.loadSeasonal(),
             this.loadTopAnime()
         ]);
-        
+
         console.log('✅ Home Page loaded!');
     },
 
@@ -34,7 +34,7 @@ const HomePage = {
         if (container && typeof Goals !== 'undefined') {
             container.innerHTML = Goals.renderWidget();
         }
-        
+
         // Render quote widget
         const quoteContainer = document.getElementById('quote-container');
         if (quoteContainer && typeof Quotes !== 'undefined') {
@@ -48,15 +48,15 @@ const HomePage = {
     async loadAnimeOfDay() {
         const container = document.getElementById('anime-of-day-container');
         if (!container) return;
-        
+
         try {
             // Usar data como seed para "random" consistente no dia
             const today = new Date().toDateString();
             const storedDate = localStorage.getItem('animeOfDay_date_v6');
             const storedAnime = localStorage.getItem('animeOfDay_anime_v6');
-            
+
             let anime;
-            
+
             // Se já tem anime salvo para hoje, usar ele
             if (storedDate === today && storedAnime) {
                 anime = JSON.parse(storedAnime);
@@ -64,19 +64,19 @@ const HomePage = {
                 // Buscar anime random da temporada
                 await API.delay();
                 const seasonal = await API.getSeasonNow(1, 25); // Page 1, 25 items
-                
+
                 if (seasonal && seasonal.length > 0) {
                     // Usar hash da data para selecionar o mesmo anime o dia todo
                     const hash = today.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0);
                     const index = Math.abs(hash) % seasonal.length;
                     anime = seasonal[index]; // Already formatted by API.getSeasonNow
-                    
+
                     // Salvar no localStorage
                     localStorage.setItem('animeOfDay_date_v6', today);
                     localStorage.setItem('animeOfDay_anime_v6', JSON.stringify(anime));
                 }
             }
-            
+
             if (anime) {
                 this.renderAnimeOfDay(anime);
             }
@@ -91,10 +91,10 @@ const HomePage = {
     renderAnimeOfDay(anime) {
         const container = document.getElementById('anime-of-day-container');
         if (!container) return;
-        
+
         const isFav = Storage.isFavorite(anime.id);
         const status = Storage.getAnimeStatus(anime.id);
-        
+
         // Formatar status
         const mapStatus = {
             'Currently Airing': 'Em lançamento',
@@ -102,7 +102,7 @@ const HomePage = {
             'Not yet aired': 'Não lançado'
         };
         const statusText = mapStatus[anime.status] || anime.status;
-        
+
         container.innerHTML = `
             <div class="anime-of-day">
                 <div class="anime-of-day-header">
@@ -149,17 +149,23 @@ const HomePage = {
      */
     async loadHeroBanner() {
         try {
-            const trending = await API.getTrending(5);
-            
+            // Fetch top 50 trending to get a good pool of popular anime
+            const trending = await API.getTrending(1, 50);
+
             if (trending && trending.length > 0) {
-                const anime = trending[0]; // Already formatted
+                // Shuffle array to get 20 random ones
+                const shuffled = trending.sort(() => 0.5 - Math.random());
+                const selected = shuffled.slice(0, 20);
+
+                // Init with first one
+                const anime = selected[0];
                 this.updateHeroBanner(anime);
-                
-                // Rotação automática
+
+                // Rotação automática all 20
                 let index = 0;
                 setInterval(() => {
-                    index = (index + 1) % Math.min(5, trending.length);
-                    this.updateHeroBanner(trending[index]); // Already formatted
+                    index = (index + 1) % selected.length;
+                    this.updateHeroBanner(selected[index]);
                 }, 8000);
             }
         } catch (error) {
@@ -179,23 +185,23 @@ const HomePage = {
         const detailsBtn = document.getElementById('hero-details-btn');
         const listBtn = document.getElementById('hero-list-btn');
         const favBtn = document.getElementById('hero-fav-btn');
-        
+
         if (banner) {
-            banner.style.backgroundImage = `url(${anime.image})`;
+            banner.style.backgroundImage = `url(${anime.banner})`;
         }
         if (title) title.textContent = anime.title;
-        if (synopsis) synopsis.textContent = anime.synopsis || '';
+        if (synopsis) synopsis.innerHTML = anime.synopsis || '';
         if (score) score.textContent = anime.score || '-';
         if (eps) eps.textContent = anime.episodes || '?';
-        
+
         if (detailsBtn) {
             detailsBtn.href = `detalhes.php?id=${anime.id}`;
         }
-        
+
         if (listBtn) {
-            listBtn.onclick = () => Common.openListModal({id: anime.id});
+            listBtn.onclick = () => Common.openListModal({ id: anime.id });
         }
-        
+
         if (favBtn) {
             favBtn.onclick = () => Common.toggleFavorite(anime.id);
             favBtn.classList.toggle('active', Storage.isFavorite(anime.id));
@@ -208,20 +214,20 @@ const HomePage = {
     async loadWatching() {
         const lists = Storage.getLists();
         const watching = lists.watching || [];
-        
+
         const container = document.getElementById('carousel-watching');
         const section = document.getElementById('section-watching');
-        
+
         if (!container) return;
-        
+
         if (watching.length === 0) {
             // Esconder seção se vazia
             if (section) section.style.display = 'none';
             return;
         }
-        
+
         if (section) section.style.display = 'block';
-        
+
         container.innerHTML = '';
         watching.slice(0, 10).forEach(anime => {
             const card = this.createWatchingCard(anime);
@@ -237,11 +243,11 @@ const HomePage = {
         const total = anime.episodes || 0;
         const percent = total > 0 ? Math.round((progress / total) * 100) : 0;
         const canAddMore = total === 0 || progress < total;
-        
+
         const card = document.createElement('div');
         card.className = 'anime-card anime-card-watching';
         card.dataset.id = anime.id;
-        
+
         card.innerHTML = `
             <div class="anime-card-image">
                 <img src="${anime.image}" alt="${anime.title}" loading="lazy">
@@ -259,13 +265,13 @@ const HomePage = {
                 <h3 class="anime-card-title" title="${anime.title}">${anime.title}</h3>
             </div>
         `;
-        
+
         card.addEventListener('click', (e) => {
             if (!e.target.closest('button')) {
                 window.location.href = `detalhes.php?id=${anime.id}`;
             }
         });
-        
+
         return card;
     },
 
@@ -275,23 +281,23 @@ const HomePage = {
     incrementEpisode(animeId) {
         const lists = Storage.getLists();
         const anime = lists.watching?.find(a => a.id === animeId);
-        
+
         if (anime) {
             anime.progress = (anime.progress || 0) + 1;
             anime.updatedAt = new Date().toISOString();
-            
+
             // Atualizar metas
             if (typeof Goals !== 'undefined') {
                 Goals.updateProgress('episodes', 1);
                 Goals.updateProgress('minutes', 24); // ~24min por episódio
             }
-            
+
             // Verificar se completou
             if (anime.episodes && anime.progress >= anime.episodes) {
                 // Mover para completed
                 Storage.moveToList(animeId, 'watching', 'completed');
                 Common.showNotification(`🎉 "${anime.title}" completo!`);
-                
+
                 // Atualizar meta de completados
                 if (typeof Goals !== 'undefined') {
                     Goals.updateProgress('completed', 1);
@@ -300,14 +306,14 @@ const HomePage = {
                 Storage.save('lists', lists);
                 Common.showNotification(`EP ${anime.progress}/${anime.episodes || '?'} ✓`);
             }
-            
+
             // Dar XP
             Storage.addXP(2);
             Common.updateLevelBadge();
-            
+
             // Atualizar seção
             this.loadWatching();
-            
+
             // Atualizar widget de metas se existir
             this.renderGoalsWidget();
         }
@@ -322,7 +328,7 @@ const HomePage = {
             Common.renderCarousel('carousel-trending', data);
         } catch (error) {
             console.error('Erro ao carregar trending:', error);
-            document.getElementById('carousel-trending').innerHTML = 
+            document.getElementById('carousel-trending').innerHTML =
                 '<p class="error-message">Erro ao carregar. Tente novamente.</p>';
         }
     },

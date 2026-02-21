@@ -5,7 +5,7 @@
 
 const API = {
     baseURL: 'https://graphql.anilist.co',
-    
+
     // Helper para delay (rate limit)
     delay(ms = 500) {
         return new Promise(resolve => setTimeout(resolve, ms));
@@ -29,17 +29,17 @@ const API = {
 
         const response = await fetch(this.baseURL, options);
         const json = await response.json();
-        
+
         if (!response.ok) {
             // Handle rate limits specially
-             if (response.status === 429) {
+            if (response.status === 429) {
                 console.warn('⚠️ Rate Limited. Waiting...');
                 await new Promise(r => setTimeout(r, 2000)); // Simple retry wait
                 return this.query(query, variables); // Retry once
-             }
+            }
             throw new Error(json.errors ? json.errors[0].message : 'Network response was not ok');
         }
-        
+
         return json.data;
     },
 
@@ -65,8 +65,8 @@ const API = {
             title: media.title?.romaji || media.title?.english || media.title?.native || 'Sem Título',
             title_english: media.title?.english,
             title_native: media.title?.native,
-            image: media.coverImage?.extraLarge || media.coverImage?.large || 'img/placeholder.jpg',
-            banner: media.bannerImage || 'img/banner-placeholder.jpg',
+            image: media.coverImage?.extraLarge || media.coverImage?.large || 'https://via.placeholder.com/200x300?text=No+Cover',
+            banner: media.bannerImage || media.coverImage?.extraLarge || 'https://via.placeholder.com/1200x400?text=No+Banner',
             synopsis: media.description || 'Sinopse não disponível.', // HTML format
             score: media.averageScore ? (media.averageScore / 10).toFixed(1) : '?',
             episodes: media.episodes,
@@ -100,6 +100,8 @@ const API = {
                     id
                     title { romaji english native }
                     coverImage { extraLarge large }
+                    bannerImage
+                    description(asHtml: true)
                     averageScore
                     episodes
                     format
@@ -121,6 +123,8 @@ const API = {
                     id
                     title { romaji english native }
                     coverImage { extraLarge large }
+                    bannerImage
+                    description(asHtml: true)
                     averageScore
                     episodes
                     format
@@ -142,6 +146,8 @@ const API = {
                     id
                     title { romaji english native }
                     coverImage { extraLarge large }
+                    bannerImage
+                    description(asHtml: true)
                     averageScore
                     episodes
                     format
@@ -150,12 +156,12 @@ const API = {
                 }
             }
         }`;
-        
-        const data = await this.query(query, { 
-            page, 
-            perPage, 
-            year: parseInt(year), 
-            season: season.toUpperCase() 
+
+        const data = await this.query(query, {
+            page,
+            perPage,
+            year: parseInt(year),
+            season: season.toUpperCase()
         });
         return Promise.all(data.Page.media.map(m => this.formatAnime(m)));
     },
@@ -171,6 +177,8 @@ const API = {
                     id
                     title { romaji english native }
                     coverImage { extraLarge large }
+                    bannerImage
+                    description(asHtml: true)
                     averageScore
                     episodes
                     format
@@ -254,21 +262,21 @@ const API = {
                 }
             }
         }`;
-        
+
         const data = await this.query(query, { id: parseInt(id) });
         const formatted = await this.formatAnime(data.Media);
-        
+
         // Trigger translation for details page specific workflow
         if (window.Translation) {
-             const cleanSynopsis = formatted.synopsis.replace(/<[^>]*>/g, '').replace(/\(Source:.*?\)/g, '').trim();
-             formatted.synopsis = await window.Translation.translate(cleanSynopsis, formatted.id);
-             
-             // Translate Genres
-             if (formatted.genres && formatted.genres.length > 0) {
-                 formatted.genres = await Promise.all(formatted.genres.map(g => window.Translation.translate(g, `genre_${g}`, 'en', null)));
-             }
+            const cleanSynopsis = formatted.synopsis.replace(/<[^>]*>/g, '').replace(/\(Source:.*?\)/g, '').trim();
+            formatted.synopsis = await window.Translation.translate(cleanSynopsis, formatted.id);
+
+            // Translate Genres
+            if (formatted.genres && formatted.genres.length > 0) {
+                formatted.genres = await Promise.all(formatted.genres.map(g => window.Translation.translate(g, `genre_${g}`, 'en', null)));
+            }
         }
-        
+
         return formatted;
     },
 
@@ -309,7 +317,7 @@ const API = {
                 }
             }
         }`;
-        
+
         const data = await this.query(query, { id: parseInt(id) });
         return data.Character;
     },
@@ -347,7 +355,7 @@ const API = {
                 }
             }
         }`;
-        
+
         const data = await this.query(query, { id: parseInt(id), page, perPage });
         return data.Media.characters;
     },
@@ -370,11 +378,11 @@ const API = {
                 }
             }
         }`;
-        
+
         const data = await this.query(query, { search, page, perPage });
         return Promise.all(data.Page.media.map(m => this.formatAnime(m)));
     },
-    
+
     /**
      * Get Airing Schedule (for Calendar)
      * Get episodes airing in the current week range
@@ -433,7 +441,7 @@ const API = {
         // AniList doesn't have a native /random endpoint.
         // Workaround: Pick a random page (1-500) from the most popular list with perPage: 10
         // This gives us access to a pool of 5000 random but "valid" anime.
-        
+
         const randomPage = Math.floor(Math.random() * 500) + 1; // 1 to 500
         const query = `
         query ($page: Int) {
@@ -452,7 +460,7 @@ const API = {
                 }
             }
         }`;
-        
+
         try {
             const data = await this.query(query, { page: randomPage });
             if (data.Page.media.length > 0) {

@@ -917,7 +917,13 @@ const Common = {
             <div class="notifications-dropdown" id="notifications-dropdown"></div>
         `;
 
-        userArea.insertBefore(btn, userArea.firstChild);
+        // Insert after Level Badge if exists, otherwise at start
+        const levelBadge = document.getElementById('level-badge');
+        if (levelBadge && levelBadge.parentNode === userArea) {
+            levelBadge.insertAdjacentElement('afterend', btn);
+        } else {
+            userArea.insertBefore(btn, userArea.firstChild);
+        }
 
         // Atualizar badge
         if (typeof Notifications !== 'undefined') {
