@@ -18,10 +18,10 @@ const MangaEngine = (() => {
     const FAVORITES_URL = 'save_fav.php';
 
     const ANILIST_QUERY = `
-        query ($search: String, $page: Int, $perPage: Int) {
+        query ($search: String, $page: Int, $perPage: Int, $genre: String) {
             Page(page: $page, perPage: $perPage) {
                 pageInfo { total currentPage lastPage hasNextPage }
-                media(search: $search, type: MANGA, sort: POPULARITY_DESC) {
+                media(search: $search, type: MANGA, sort: POPULARITY_DESC, genre: $genre) {
                     id
                     title { romaji english native }
                     coverImage { large medium }
@@ -49,6 +49,20 @@ const MangaEngine = (() => {
         favorites: new Set(),     // Set de anilist_ids favoritados
         searchTimeout: null,      // Debounce timer
         lastSearch: '',           // Última busca
+
+        // Paginação e Filtros
+        currentPage: 1,
+        hasNextPage: false,
+        currentGenre: '',
+        isLoadingMore: false,
+
+        // Histórico (localStorage)
+        readChapters: new Set(),   // Set de chapter_ids lidos
+        lastReadManga: null,       // Objeto com info do último mangá lido {id, title, cover, chapterNum, chapterId, timestamp}
+
+        // Leitor
+        readingMode: 'scroll',     // 'scroll' ou 'page'
+        currentPageInChapter: 0    // Índice da página atual no modo 'page'
     };
 
     // =========================================================
@@ -96,6 +110,77 @@ const MangaEngine = (() => {
         const tmp = document.createElement('div');
         tmp.innerHTML = html;
         return tmp.textContent || tmp.innerText || '';
+    }
+
+    /** localStorage: Capítulos Lidos */
+    function saveReadChapter(chapterId) {
+        state.readChapters.add(chapterId);
+        localStorage.setItem('mangaengine_read', JSON.stringify([...state.readChapters]));
+    }
+
+    function loadReadChapters() {
+        const saved = localStorage.getItem('mangaengine_read');
+        if (saved) {
+            state.readChapters = new Set(JSON.parse(saved));
+        }
+    }
+
+    /** localStorage: Último Mangá Lido */
+    function saveLastRead(manga, chapter) {
+        const lastRead = {
+            id: manga.id,
+            title: manga.title,
+            cover: manga.coverImage?.medium || manga.coverImage?.large,
+            chapterNum: chapter.attributes?.chapter || '?',
+            chapterId: chapter.id,
+            timestamp: Date.now()
+        };
+        state.lastReadManga = lastRead;
+        localStorage.setItem('mangaengine_last_read', JSON.stringify(lastRead));
+        renderContinueReading();
+    }
+
+    function loadLastRead() {
+        const saved = localStorage.getItem('mangaengine_last_read');
+        if (saved) {
+            state.lastReadManga = JSON.parse(saved);
+            renderContinueReading();
+        }
+    }
+
+    /** Renderizar seção Continuar Lendo */
+    function renderContinueReading() {
+        const container = $('continueReading');
+        const content = $('continueReadingContent');
+
+        if (!state.lastReadManga) {
+            container.classList.add('hidden');
+            return;
+        }
+
+        container.classList.remove('hidden');
+        const lr = state.lastReadManga;
+        const title = getTitle(lr.title);
+
+        content.innerHTML = `
+            <div class="glass p-4 rounded-xl border border-engine-orange/30 flex items-center gap-4 group cursor-pointer hover:border-engine-orange transition-all max-w-2xl"
+                 onclick="MangaEngine.openMangaById(${lr.id})">
+                <img src="${lr.cover}" alt="${title}" class="w-16 h-24 object-cover rounded-lg shadow-lg border border-engine-border">
+                <div class="flex-1 min-w-0">
+                    <p class="text-engine-orange font-mono text-[10px] mb-1">PRÓXIMO PASSO //</p>
+                    <h3 class="text-engine-text font-display font-bold text-lg truncate">${title}</h3>
+                    <p class="text-engine-muted font-mono text-xs">Parou no Capítulo ${lr.chapterNum}</p>
+                    <div class="mt-3 flex items-center gap-2">
+                        <span class="px-3 py-1 rounded bg-engine-orange text-black font-mono text-[10px] font-bold group-hover:bg-white transition-colors">RETOMAR LEITURA</span>
+                    </div>
+                </div>
+                <div class="text-engine-muted/20 group-hover:text-engine-orange transition-colors pr-2">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                    </svg>
+                </div>
+            </div>
+        `;
     }
 
     /** Trunca texto */
@@ -147,84 +232,116 @@ const MangaEngine = (() => {
     // ANILIST API — Busca de Mangás
     // =========================================================
 
-    async function searchAniList(query) {
-        if (!query || query.trim().length < 2) {
+    async function searchAniList(query = '', isLoadMore = false) {
+        const isDiscovery = !query || query.trim().length < 2;
+
+        if (!isLoadMore) {
+            state.currentPage = 1;
+            state.lastSearch = query;
+            if (isDiscovery) {
+                $('homeSectionTitle').classList.remove('hidden');
+                $('welcomeHero').classList.remove('hidden');
+            } else {
+                $('homeSectionTitle').classList.add('hidden');
+                $('welcomeHero').classList.add('hidden');
+            }
             $('searchResults').innerHTML = '';
-            $('searchEmpty').classList.add('hidden');
-            $('welcomeHero').classList.remove('hidden');
-            return;
         }
 
-        $('welcomeHero').classList.add('hidden');
         $('searchSpinner').classList.remove('hidden');
         $('searchEmpty').classList.add('hidden');
+        $('paginationContainer').classList.add('hidden');
 
         try {
+            const variables = {
+                page: state.currentPage,
+                perPage: 15,
+                genre: state.currentGenre || undefined
+            };
+
+            if (!isDiscovery) {
+                variables.search = query.trim();
+            }
+
             const response = await fetch(ANILIST_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     query: ANILIST_QUERY,
-                    variables: {
-                        search: query.trim(),
-                        page: 1,
-                        perPage: 20
-                    }
+                    variables: variables
                 })
             });
 
             if (!response.ok) throw new Error(`AniList API Error: ${response.status}`);
 
             const json = await response.json();
+            const pageInfo = json?.data?.Page?.pageInfo;
             const media = json?.data?.Page?.media || [];
 
-            renderSearchResults(media);
+            state.hasNextPage = pageInfo?.hasNextPage || false;
 
-            if (media.length === 0) {
+            renderSearchResults(media, isLoadMore);
+
+            if (media.length === 0 && !isLoadMore) {
                 $('searchEmpty').classList.remove('hidden');
+            }
+
+            if (state.hasNextPage) {
+                $('paginationContainer').classList.remove('hidden');
             }
 
         } catch (error) {
             console.error('AniList Error:', error);
             showToast('Erro ao buscar no AniList: ' + error.message, 'error');
-            $('searchResults').innerHTML = '';
-            $('searchEmpty').classList.remove('hidden');
+            if (!isLoadMore) {
+                $('searchResults').innerHTML = '';
+                $('searchEmpty').classList.remove('hidden');
+            }
         } finally {
             $('searchSpinner').classList.add('hidden');
         }
     }
 
     /** Renderizar cards de resultado */
-    function renderSearchResults(mediaList) {
+    function renderSearchResults(mediaList, append = false) {
         const container = $('searchResults');
-        container.innerHTML = '';
+        if (!append) container.innerHTML = '';
 
-        mediaList.forEach((manga, index) => {
-            const card = document.createElement('div');
-            card.className = 'manga-card bg-engine-card rounded-lg overflow-hidden border border-engine-border border-l-4 border-l-engine-orange cursor-pointer animate-slide-up';
-            card.style.animationDelay = `${index * 0.05}s`;
-            card.onclick = () => selectManga(manga);
-
-            const score = manga.averageScore;
-            const scoreColor = score >= 75 ? 'text-green-400' : score >= 50 ? 'text-yellow-400' : 'text-red-400';
+        mediaList.forEach(manga => {
+            const title = getTitle(manga.title);
+            const score = manga.averageScore || '??';
+            const year = manga.startDate?.year || '????';
+            const description = truncate(stripHTML(manga.description), 180);
             const genres = (manga.genres || []).slice(0, 3);
 
+            const card = document.createElement('div');
+            card.className = 'manga-card group cursor-pointer animate-fade-in';
+            card.onclick = () => selectManga(manga);
+
             card.innerHTML = `
-                <div class="relative aspect-[3/4] overflow-hidden bg-engine-surface">
-                    <img src="${manga.coverImage?.large || manga.coverImage?.medium || ''}"
-                         alt="${getTitle(manga.title)}"
-                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                         loading="lazy"
-                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22><rect fill=%22%2316161f%22 width=%22300%22 height=%22400%22/><text fill=%22%236b6b80%22 x=%22150%22 y=%22200%22 text-anchor=%22middle%22 font-size=%2216%22>Sem capa</text></svg>'">
-                    ${score ? `<div class="absolute top-2 right-2 glass rounded-md px-2 py-0.5 ${scoreColor} font-mono text-xs font-bold">${formatScore(score)}</div>` : ''}
-                    <div class="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-engine-card to-transparent"></div>
+                <div class="relative aspect-[2/3] rounded-xl overflow-hidden border-2 border-engine-border group-hover:border-engine-orange transition-all duration-300 shadow-lg">
+                    <img src="${manga.coverImage.large}" alt="${title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                    
+                    <!-- Score Badge -->
+                    <div class="absolute top-2 right-2 px-2 py-1 rounded bg-black/80 border border-engine-orange/50 backdrop-blur-md">
+                        <span class="text-engine-orange font-mono text-[10px] font-bold">★ ${score}</span>
+                    </div>
+
+                    <div class="absolute bottom-0 left-0 right-0 p-3">
+                        <p class="text-engine-text font-display font-medium text-sm leading-tight line-clamp-2">${title}</p>
+                    </div>
                 </div>
-                <div class="p-3">
-                    <h3 class="text-sm font-display font-bold text-engine-text leading-tight line-clamp-2 mb-1.5" title="${getTitle(manga.title)}">
-                        ${getTitle(manga.title)}
-                    </h3>
+
+                <!-- Tooltip Tech (Sinopse no Hover) -->
+                <div class="manga-tooltip">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-engine-orange font-mono text-[10px]">INFO // ${year}</span>
+                        <span class="text-engine-muted font-mono text-[9px] uppercase">${manga.format || 'MANGA'}</span>
+                    </div>
+                    <p class="text-engine-text/90 font-mono text-[10px] leading-relaxed mb-3 italic">"${description || 'Sem descrição disponível.'}"</p>
                     <div class="flex flex-wrap gap-1">
-                        ${genres.map(g => `<span class="genre-pill text-[10px] font-mono px-1.5 py-0.5 rounded border border-engine-border text-engine-muted">${g}</span>`).join('')}
+                        ${genres.map(g => `<span class="px-1.5 py-0.5 rounded bg-engine-surface border border-engine-border text-engine-muted text-[8px] font-mono">${g}</span>`).join('')}
                     </div>
                 </div>
             `;
@@ -443,6 +560,27 @@ const MangaEngine = (() => {
         }
     }
 
+    async function openMangaById(anilistId) {
+        showSection('details');
+        $('detailsLoading').classList.remove('hidden');
+
+        try {
+            const response = await fetch(ANILIST_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    query: `query ($id: Int) { Media(id: $id, type: MANGA) { id title { romaji english native } coverImage { large medium } bannerImage averageScore genres description status chapters volumes startDate { year month } format } }`,
+                    variables: { id: anilistId }
+                })
+            });
+            const json = await response.json();
+            const manga = json?.data?.Media;
+            if (manga) selectManga(manga);
+        } catch (e) {
+            showToast('Erro ao abrir mangá: ' + e.message, 'error');
+        }
+    }
+
     /** Renderizar lista de capítulos */
     function renderChapters(chapters) {
         const container = $('chaptersList');
@@ -469,9 +607,10 @@ const MangaEngine = (() => {
             const isExternal = !!attrs.externalUrl;
             const lang = attrs.translatedLanguage || 'en';
             const langLabel = lang === 'pt-br' ? 'PT-BR' : lang.toUpperCase();
+            const isRead = state.readChapters.has(ch.id);
 
             const item = document.createElement('div');
-            item.className = `chapter-item flex items-center justify-between p-3 rounded-lg border border-engine-border border-l-4 ${isExternal ? 'border-l-blue-500/50' : 'border-l-transparent'} cursor-pointer hover:border-l-engine-orange transition-all`;
+            item.className = `chapter-item flex items-center justify-between p-3 rounded-lg border border-engine-border border-l-4 ${isExternal ? 'border-l-blue-500/50' : 'border-l-transparent'} cursor-pointer hover:border-l-engine-orange transition-all ${isRead ? 'chapter-read' : ''}`;
 
             item.onclick = () => openReader(index);
 
@@ -518,12 +657,20 @@ const MangaEngine = (() => {
         const chNum = chapter.attributes?.chapter || '?';
         const chTitle = chapter.attributes?.title || `Capítulo ${chNum}`;
 
+        saveLastRead(state.currentManga, chapter);
+
+        state.currentPageInChapter = 0; // Reset ao abrir novo capítulo
+
         showSection('reader');
+        updateReaderUI();
 
         // Update reader title
         const readerTitle = $('readerTitle');
-        readerTitle.querySelector('p:first-child').textContent = getTitle(state.currentManga.title);
-        readerTitle.querySelector('p:last-child').textContent = `Capítulo ${chNum} — ${chTitle}`;
+        const titleElements = readerTitle.querySelectorAll('p');
+        if (titleElements.length >= 2) {
+            titleElements[0].textContent = getTitle(state.currentManga.title);
+            titleElements[1].textContent = `Capítulo ${chNum} — ${chTitle}`;
+        }
 
         // Update nav buttons
         $('btnPrevChapter').disabled = chapterIndex <= 0;
@@ -727,29 +874,33 @@ const MangaEngine = (() => {
         const container = $('readerPages');
         container.innerHTML = '';
 
-        const pathSegment = usingSaver ? 'data-saver' : 'data';
+        // Aplicar classe de modo
+        container.className = state.readingMode === 'page' ? 'reader-page-mode relative' : 'space-y-4';
 
-        pages.forEach((filename, index) => {
-            const url = `${baseUrl}/${pathSegment}/${hash}/${filename}`;
+        pages.forEach((page, index) => {
+            const img = document.createElement('img');
+            const url = `${baseUrl}/${usingSaver ? 'data-saver' : 'data'}/${hash}/${page}`;
+            img.src = url;
+            img.alt = `Página ${index + 1}`;
+            img.className = `w-full max-w-4xl mx-auto rounded-lg shadow-xl transition-opacity duration-300 ${state.readingMode === 'page' && index === 0 ? 'active-page' : ''}`;
+            img.loading = index < 3 ? 'eager' : 'lazy'; // Carregar as primeiras imediatamente
 
-            const wrapper = document.createElement('div');
-            wrapper.className = 'relative bg-engine-surface rounded-md overflow-hidden animate-fade-in';
-            wrapper.style.animationDelay = `${index * 0.05}s`;
+            // No modo página, o clique na imagem avança
+            if (state.readingMode === 'page') {
+                img.onclick = (e) => {
+                    const rect = img.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    if (x > rect.width / 2) nextPage();
+                    else prevPage();
+                };
+            }
 
-            wrapper.innerHTML = `
-                <div class="page-placeholder flex items-center justify-center py-20">
-                    <div class="spinner"></div>
-                </div>
-                <img src="${url}"
-                     alt="Página ${index + 1}"
-                     class="page-img w-full h-auto"
-                     loading="lazy"
-                     onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none';"
-                     onerror="this.previousElementSibling.innerHTML='<p class=\\'text-engine-muted font-mono text-sm\\'>Erro ao carregar página ${index + 1}</p>';">
-            `;
-
-            container.appendChild(wrapper);
+            container.appendChild(img);
         });
+
+        if (state.readingMode === 'page') {
+            updatePageCounter();
+        }
 
         // Show bottom navigation
         $('readerBottomNav').classList.remove('hidden');
@@ -767,6 +918,88 @@ const MangaEngine = (() => {
         if (state.currentChapterIndex < state.chapters.length - 1) {
             openReader(state.currentChapterIndex + 1);
         }
+    }
+
+    /** Mudar modo de leitura */
+    function setReadingMode(mode) {
+        if (state.readingMode === mode) return;
+        state.readingMode = mode;
+
+        // Atualizar botões
+        $('btnModeScroll').classList.toggle('active', mode === 'scroll');
+        $('btnModePage').classList.toggle('active', mode === 'page');
+
+        // Se estiver no leitor, re-renderizar ou ajustar
+        if (state.currentSection === 'reader') {
+            const container = $('readerPages');
+            const images = container.querySelectorAll('img');
+
+            if (images.length > 0) {
+                container.className = mode === 'page' ? 'reader-page-mode relative' : 'space-y-4';
+                images.forEach((img, i) => {
+                    img.className = `w-full max-w-4xl mx-auto rounded-lg shadow-xl transition-opacity duration-300 ${mode === 'page' && i === state.currentPageInChapter ? 'active-page' : ''}`;
+                    // Remover/Adicionar evento de clique
+                    img.onclick = mode === 'page' ? (e) => {
+                        const rect = img.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        if (x > rect.width / 2) nextPage();
+                        else prevPage();
+                    } : null;
+                });
+
+                if (mode === 'page') {
+                    updatePageCounter();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+        }
+
+        showToast(`Modo de leitura: ${mode === 'page' ? 'Página a Página' : 'Rolagem Vertical'}`, 'info');
+    }
+
+    function updatePageVisibility() {
+        const images = $('readerPages').querySelectorAll('img');
+        images.forEach((img, i) => {
+            img.classList.toggle('active-page', i === state.currentPageInChapter);
+        });
+        updatePageCounter();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextPage() {
+        const images = $('readerPages').querySelectorAll('img');
+        if (state.currentPageInChapter < images.length - 1) {
+            state.currentPageInChapter++;
+            updatePageVisibility();
+        } else {
+            showToast('Fim do capítulo. Use a navegação abaixo para o próximo.', 'info');
+        }
+    }
+
+    function prevPage() {
+        if (state.currentPageInChapter > 0) {
+            state.currentPageInChapter--;
+            updatePageVisibility();
+        }
+    }
+
+    function updatePageCounter() {
+        const images = $('readerPages').querySelectorAll('img');
+        const counter = $('readerPageCounter');
+        if (counter) {
+            if (state.readingMode === 'page' && images.length > 0) {
+                counter.classList.remove('hidden');
+                counter.textContent = `${state.currentPageInChapter + 1} / ${images.length}`;
+            } else {
+                counter.classList.add('hidden');
+            }
+        }
+    }
+
+    function updateReaderUI() {
+        // Garantir que os botões de modo reflitam o estado
+        $('btnModeScroll').classList.toggle('active', state.readingMode === 'scroll');
+        $('btnModePage').classList.toggle('active', state.readingMode === 'page');
     }
 
     // =========================================================
@@ -850,11 +1083,10 @@ const MangaEngine = (() => {
 
         } catch (error) {
             console.error('Load Favorites Error:', error);
-            // Se o servidor PHP não está rodando, mostrar mensagem amigável
             $('favoritesEmpty').classList.remove('hidden');
             $('favoritesEmpty').innerHTML = `
                 <svg class="w-16 h-16 text-engine-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
                 <p class="text-engine-muted font-mono text-sm mb-2">Servidor PHP não disponível.</p>
                 <p class="text-engine-muted/60 font-mono text-xs">Inicie o XAMPP/PHP para ativar o sistema de favoritos.</p>
@@ -876,11 +1108,7 @@ const MangaEngine = (() => {
 
             card.innerHTML = `
                 <div class="relative aspect-[3/4] overflow-hidden bg-engine-surface cursor-pointer" onclick="MangaEngine.openFavorite(${fav.anilist_id}, '${(fav.mangadex_id || '').replace(/'/g, "\\'")}')">
-                    <img src="${fav.cover_url || ''}"
-                         alt="${fav.title}"
-                         class="w-full h-full object-cover"
-                         loading="lazy"
-                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 400%22><rect fill=%22%2316161f%22 width=%22300%22 height=%22400%22/><text fill=%22%236b6b80%22 x=%22150%22 y=%22200%22 text-anchor=%22middle%22 font-size=%2216%22>Sem capa</text></svg>'">
+                    <img src="${fav.cover_url || ''}" alt="${fav.title}" class="w-full h-full object-cover" loading="lazy">
                     <div class="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-engine-card to-transparent"></div>
                 </div>
                 <div class="p-3 flex items-start justify-between gap-2">
@@ -929,15 +1157,15 @@ const MangaEngine = (() => {
 
         try {
             const query = `
-                query ($id: Int) {
-                    Media(id: $id, type: MANGA) {
+query($id: Int) {
+    Media(id: $id, type: MANGA) {
                         id title { romaji english native }
                         coverImage { large medium } bannerImage
                         averageScore genres description(asHtml: false)
                         status chapters volumes startDate { year month } format
-                    }
-                }
-            `;
+    }
+}
+`;
             const res = await fetch(ANILIST_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -992,8 +1220,22 @@ const MangaEngine = (() => {
             }
         });
 
-        // Focus search on '/' key
+        // Reader Mode Buttons
+        $('btnModeScroll').addEventListener('click', () => setReadingMode('scroll'));
+        $('btnModePage').addEventListener('click', () => setReadingMode('page'));
+
+        // Keyboard Navigation
         document.addEventListener('keydown', (e) => {
+            if (document.activeElement === searchInput) return;
+
+            if (state.currentSection === 'reader' && state.readingMode === 'page') {
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                    nextPage();
+                } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                    prevPage();
+                }
+            }
+
             if (e.key === '/' && document.activeElement !== searchInput) {
                 e.preventDefault();
                 searchInput.focus();
@@ -1006,8 +1248,36 @@ const MangaEngine = (() => {
             }
         });
 
+        // Genre Filters
+        document.querySelectorAll('.genre-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // UI update
+                document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active-genre'));
+                btn.classList.add('active-genre');
+
+                state.currentGenre = btn.dataset.genre;
+                searchAniList(searchInput.value); // Re-search with genre
+            });
+        });
+
+        // Load More Button
+        const loadMoreBtn = $('loadMoreBtn');
+        loadMoreBtn.addEventListener('click', () => {
+            if (state.hasNextPage) {
+                state.currentPage++;
+                searchAniList(state.lastSearch, true);
+            }
+        });
+
+        // Load Persisted Data
+        loadReadChapters();
+        loadLastRead();
+
         // Load favorites set (sem renderizar, só para saber quais estão favoritados)
         loadFavoritesSet();
+
+        // Load trending manga on home
+        searchAniList('');
 
         console.log(
             '%c⚙ MangaEngine v1.0 %cInitialized',
@@ -1047,6 +1317,10 @@ const MangaEngine = (() => {
         openFavorite,
         prevChapter,
         nextChapter,
+        setReadingMode,
+        nextPage,
+        prevPage,
+        openMangaById,
     };
 
 })();
