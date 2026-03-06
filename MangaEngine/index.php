@@ -195,6 +195,70 @@
             background: rgba(255, 102, 0, 0.2);
             border-color: #ff6600;
         }
+        /* Capítulo Lido */
+        .chapter-read {
+            opacity: 0.5;
+        }
+        .chapter-read .text-engine-orange {
+            color: var(--text-muted);
+        }
+
+        /* Tooltip Tech */
+        .manga-card {
+            position: relative;
+        }
+        .manga-tooltip {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            width: 250px;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--engine-border);
+            padding: 12px;
+            border-radius: 8px;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 102, 0, 0.1);
+        }
+        .manga-card:hover .manga-tooltip {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .manga-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: var(--engine-border) transparent transparent transparent;
+        }
+        .active-genre {
+            border-color: var(--engine-orange) !important;
+            color: var(--engine-orange) !important;
+            background: rgba(255, 102, 0, 0.1) !important;
+        }
+
+        /* Reading Modes */
+        .reader-page-mode img {
+            display: none;
+            max-height: 85vh;
+            margin: 0 auto;
+            object-fit: contain;
+        }
+        .reader-page-mode img.active-page {
+            display: block;
+        }
+        .reader-mode-btn.active {
+            background: var(--engine-orange);
+            color: black;
+            border-color: var(--engine-orange);
+        }
     </style>
 </head>
 <body class="min-h-screen bg-grid">
@@ -259,6 +323,18 @@
 
         <!-- ========== SEÇÃO: RESULTADOS DE BUSCA ========== -->
         <section id="sectionSearch" class="animate-fade-in">
+            
+            <!-- Continue Reading Section (Dynamic) -->
+            <div id="continueReading" class="mb-10 hidden">
+                <h2 class="text-xs font-mono text-engine-muted mb-4 tracking-widest uppercase flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-engine-orange animate-pulse"></span>
+                    Continuar Lendo
+                </h2>
+                <div id="continueReadingContent">
+                    <!-- Preenchido pelo engine.js -->
+                </div>
+            </div>
+
             <!-- Hero Welcome -->
             <div id="welcomeHero" class="text-center py-20">
                 <div class="inline-block mb-6">
@@ -290,8 +366,33 @@
             </div>
 
             <!-- Search Results Grid -->
+            <div id="homeSectionTitle" class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h2 class="text-xl font-bold font-display text-engine-text tracking-wide">
+                    <span class="text-engine-orange">//</span> MANGÁS EM ALTA
+                </h2>
+                
+                <!-- Genre Filters -->
+                <div id="genreFilters" class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
+                    <button data-genre="" class="genre-btn px-3 py-1 rounded-full border border-engine-border text-[10px] font-mono text-engine-muted hover:border-engine-orange hover:text-engine-orange transition-all whitespace-nowrap bg-engine-surface active-genre">Tudo</button>
+                    <button data-genre="Action" class="genre-btn px-3 py-1 rounded-full border border-engine-border text-[10px] font-mono text-engine-muted hover:border-engine-orange hover:text-engine-orange transition-all whitespace-nowrap bg-engine-surface">Ação</button>
+                    <button data-genre="Adventure" class="genre-btn px-3 py-1 rounded-full border border-engine-border text-[10px] font-mono text-engine-muted hover:border-engine-orange hover:text-engine-orange transition-all whitespace-nowrap bg-engine-surface">Aventura</button>
+                    <button data-genre="Comedy" class="genre-btn px-3 py-1 rounded-full border border-engine-border text-[10px] font-mono text-engine-muted hover:border-engine-orange hover:text-engine-orange transition-all whitespace-nowrap bg-engine-surface">Comédia</button>
+                    <button data-genre="Drama" class="genre-btn px-3 py-1 rounded-full border border-engine-border text-[10px] font-mono text-engine-muted hover:border-engine-orange hover:text-engine-orange transition-all whitespace-nowrap bg-engine-surface">Drama</button>
+                    <button data-genre="Fantasy" class="genre-btn px-3 py-1 rounded-full border border-engine-border text-[10px] font-mono text-engine-muted hover:border-engine-orange hover:text-engine-orange transition-all whitespace-nowrap bg-engine-surface">Fantasia</button>
+                    <button data-genre="Horror" class="genre-btn px-3 py-1 rounded-full border border-engine-border text-[10px] font-mono text-engine-muted hover:border-engine-orange hover:text-engine-orange transition-all whitespace-nowrap bg-engine-surface">Terror</button>
+                    <button data-genre="Romance" class="genre-btn px-3 py-1 rounded-full border border-engine-border text-[10px] font-mono text-engine-muted hover:border-engine-orange hover:text-engine-orange transition-all whitespace-nowrap bg-engine-surface">Romance</button>
+                </div>
+            </div>
             <div id="searchResults" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 <!-- Cards dinamicamente inseridos por engine.js -->
+            </div>
+
+            <!-- Pagination -->
+            <div id="paginationContainer" class="mt-12 text-center hidden">
+                <button id="loadMoreBtn" class="px-8 py-3 rounded-lg border border-engine-border bg-engine-surface text-engine-muted font-mono text-sm hover:border-engine-orange hover:text-engine-orange transition-all group">
+                    CARREGAR MAIS 
+                    <span class="inline-block group-hover:translate-y-1 transition-transform">↓</span>
+                </button>
             </div>
 
             <!-- Empty State -->
@@ -352,16 +453,26 @@
         <section id="sectionReader" class="section-hidden animate-fade-in">
             <!-- Reader Header -->
             <div class="glass rounded-lg p-4 mb-6 flex items-center justify-between flex-wrap gap-3">
-                <button onclick="MangaEngine.showSection('details')"
-                        class="flex items-center gap-2 text-engine-muted hover:text-engine-orange font-mono text-sm transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                    Voltar
-                </button>
+                <!-- Reader Control -->
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center bg-engine-surface rounded-lg border border-engine-border p-1">
+                        <button id="btnModeScroll" title="Modo Rolagem" class="reader-mode-btn active px-3 py-1.5 rounded-md text-[10px] font-mono transition-all">
+                            SCROLL
+                        </button>
+                        <button id="btnModePage" title="Modo Página" class="reader-mode-btn px-3 py-1.5 rounded-md text-[10px] font-mono transition-all">
+                            PÁGINA
+                        </button>
+                    </div>
+                    <button onclick="MangaEngine.showSection('details')" class="p-2 rounded-lg bg-engine-surface border border-engine-border hover:border-engine-orange text-engine-muted transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
                 <div id="readerTitle" class="text-center">
                     <p class="text-engine-orange font-display font-bold text-lg leading-tight"></p>
-                    <p class="text-engine-muted font-mono text-xs"></p>
+                    <p class="text-engine-muted font-mono text-xs mb-1"></p>
+                    <span id="readerPageCounter" class="text-engine-orange font-mono text-[10px] bg-engine-orange/10 px-2 py-0.5 rounded border border-engine-orange/20 hidden"></span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button id="btnPrevChapter" onclick="MangaEngine.prevChapter()"
