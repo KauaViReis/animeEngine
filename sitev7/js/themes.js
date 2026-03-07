@@ -137,6 +137,36 @@ var Themes = window.Themes || {
             icon: '📐',
             description: 'Architecture & Design',
             secret: true
+        },
+        glitchMode: {
+            name: 'Glitch Mode',
+            icon: '👾',
+            description: 'Sistema Corrompido',
+            secret: true
+        },
+        bloodMoon: {
+            name: 'Blood Moon',
+            icon: '🩸',
+            description: 'A Lua de Sangue Ascendeu',
+            secret: true
+        },
+        oledMode: {
+            name: 'OLED Pitch Black',
+            icon: '🔋',
+            description: 'Dark Absoluto para Bateria',
+            secret: true
+        },
+        developerMode: {
+            name: 'Developer Mode',
+            icon: '👨‍💻',
+            description: 'IDE Dark & Workspace',
+            secret: true
+        },
+        yandereMode: {
+            name: 'Yandere Mode',
+            icon: '🔪',
+            description: 'Doce, mas letal...',
+            secret: true
         }
     },
 

@@ -42,8 +42,16 @@ const Storage = {
 
         if (newLevel > user.level) {
             user.level = newLevel;
-            // Common.showNotification ? We are in storage layer.
-            // Dispatch event?
+
+            // OLED Game Reward
+            if (newLevel >= 30) {
+                if (typeof Themes !== 'undefined' && !Themes.isUnlocked('oledMode')) {
+                    Themes.unlock('oledMode');
+                    if (typeof Common !== 'undefined') {
+                        setTimeout(() => Common.showToast('🔋 Level 30 Alcançado! OLED Pitch Black Desbloqueado!'), 1500);
+                    }
+                }
+            }
         }
 
         this.set(this.KEYS.USER, user);

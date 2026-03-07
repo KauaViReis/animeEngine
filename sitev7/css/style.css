@@ -201,7 +201,6 @@
     --color-green: #22c55e;
     --color-purple: #d926ff;
 
-    --color-text: #ffe6f2;
     --color-text-muted: #806b77;
     --color-text-light: #604b56;
 
@@ -248,17 +247,148 @@
     --color-purple: #cc00ff;
 
     --color-text: #ffffff;
+    --color-text-muted: #cccccc;
+    --color-text-light: #999999;
+
+    --border-color: #ff00cc;
+    --shadow-neo: 4px 4px 0 #3333ff, -4px -4px 0 #00ccff;
+    --shadow-neo-hover: 6px 6px 0 #ff00cc, -6px -6px 0 #cc00ff;
+}
+
+/* ========================================
+   TEMAS GAMIFICADOS & EASTER EGGS
+======================================== */
+/* Glitch Mode (Sistema Corrompido) */
+:root[data-theme="glitchMode"] {
+    --color-bg: #000000;
+    --color-surface: #0a0a0a;
+    --color-black: #000000;
+    --color-white: #ffffff;
+    --color-on-primary: #ffffff;
+
+    --color-primary: #00ffcc;
+    --color-secondary: #ff00ff;
+    --color-blue: #0000ff;
+    --color-green: #00ff00;
+    --color-purple: #ff00ff;
+
+    --color-text: #e0e0e0;
     --color-text-muted: #888888;
-    --color-text-light: #555555;
+    --color-text-light: #444444;
 
-    --border-color: #222222;
-    --shadow-neo: 0 0 10px rgba(255, 0, 204, 0.3);
-    --shadow-neo-hover: 0 0 20px rgba(255, 0, 204, 0.5);
+    --border-color: #ff00ff;
+    --shadow-neo: 4px 0px 0 #00ffcc, -4px 0px 0 #ff00ff;
+    --shadow-neo-hover: 8px 0px 0 #00ffcc, -8px 0px 0 #ff00ff;
+}
 
-    /* Rainbow Animation Tokens - High Velocity & Contrast */
-    --rainbow-gradient: linear-gradient(90deg,
-            #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff0080, #ff0000);
-    --rainbow-size: 400% 100%;
+/* Blood Moon (A Lua de Sangue) */
+:root[data-theme="bloodMoon"] {
+    --color-bg: #050000;
+    --color-surface: #120000;
+    --color-black: #000000;
+    --color-white: #ffffff;
+    --color-on-primary: #ffffff;
+
+    --color-primary: #ff0000;
+    --color-secondary: #8b0000;
+    --color-blue: #550000;
+    --color-green: #330000;
+    --color-purple: #4a0000;
+
+    --color-text: #ff9999;
+    --color-text-muted: #aa4444;
+    --color-text-light: #662222;
+
+    --border-color: #aa0000;
+    --shadow-neo: 4px 4px 0 #ff0000;
+    --shadow-neo-hover: 6px 6px 0 #ff0000;
+}
+
+/* OLED Pitch Black (Modo Energia) */
+:root[data-theme="oledMode"] {
+    --color-bg: #000000;
+    --color-surface: #050505;
+    --color-black: #000000;
+    --color-white: #ffffff;
+    --color-on-primary: #000000;
+
+    --color-primary: #ffffff;
+    --color-secondary: #aaaaaa;
+    --color-blue: #777777;
+    --color-green: #555555;
+    --color-purple: #333333;
+
+    --color-text: #e0e0e0;
+    --color-text-muted: #888888;
+    --color-text-light: #444444;
+
+    --border-color: #333333;
+    --shadow-neo: 0px 0px 0 #000000;
+    --shadow-neo-hover: 0px 0px 10px rgba(255, 255, 255, 0.2);
+}
+
+/* Developer Mode (VS Code Dark) */
+:root[data-theme="developerMode"] {
+    --color-bg: #0d1117;
+    --color-surface: #161b22;
+    --color-black: #010409;
+    --color-white: #c9d1d9;
+    --color-on-primary: #ffffff;
+
+    --color-primary: #58a6ff;
+    --color-secondary: #3fb950;
+    --color-blue: #1f6feb;
+    --color-green: #238636;
+    --color-purple: #8957e5;
+
+    --color-text: #c9d1d9;
+    --color-text-muted: #8b949e;
+    --color-text-light: #484f58;
+
+    --border-color: #30363d;
+    --shadow-neo: 4px 4px 0 #0d1117;
+    --shadow-neo-hover: 6px 6px 0 #1f6feb;
+    --font-display: 'Consolas', 'Courier New', monospace;
+    --font-body: 'Consolas', 'Courier New', monospace;
+}
+
+/* Yandere Mode (Amor e Violência) */
+:root[data-theme="yandereMode"] {
+    --color-bg: #1a0510;
+    --color-surface: #2b081a;
+    --color-black: #0d0208;
+    --color-white: #ffffff;
+    --color-on-primary: #ffffff;
+
+    --color-primary: #ff007f;
+    --color-secondary: #cc0000;
+    --color-blue: #990033;
+    --color-green: #66001a;
+    --color-purple: #ff3399;
+
+    --color-text: #ffcccc;
+    --color-text-muted: #cc6699;
+    --color-text-light: #993366;
+
+    --border-color: #ff007f;
+    --shadow-neo: 4px 4px 0 #cc0000;
+    --shadow-neo-hover: 6px 6px 0 #ff007f;
+}
+
+--color-text-muted: #cccccc;
+--color-text-light: #999999;
+
+--border-color: #ff00cc;
+--shadow-neo: 4px 4px 0 #3333ff,
+-4px -4px 0 #00ccff;
+--shadow-neo-hover: 6px 6px 0 #ff00cc,
+-6px -6px 0 #cc00ff;
+}
+
+/* Rainbow Animation Tokens - High Velocity & Contrast */
+--rainbow-gradient: linear-gradient(90deg,
+    #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff0080, #ff0000);
+--rainbow-size: 400% 100%;
 }
 
 /* RuanMode (👨‍💻 Royal Blue Style) */

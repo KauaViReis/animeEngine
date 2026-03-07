@@ -16,8 +16,84 @@ const Common = {
         this.createMobileRandomButton(); // Mobile Header
         this.createSidebarRandomButton(); // Desktop Sidebar
         this.initNotifications();
+        this.setupEasterEggs();
         this.checkAchievements();
         console.log('🚀 AnimeEngine v6 loaded!');
+    },
+
+    /**
+     * Easter Eggs & Caçador de Temas Secretos
+     */
+    setupEasterEggs() {
+        // 1. A Hora Espectral (Blood Moon)
+        const hour = new Date().getHours();
+        if (hour === 3 && typeof Themes !== 'undefined') {
+            if (!Themes.isUnlocked('bloodMoon')) {
+                Themes.unlock('bloodMoon');
+                this.showToast('🩸 A Lua de Sangue Ascendeu... Tema Blood Moon desbloqueado!');
+                Themes.apply('bloodMoon');
+            }
+        }
+
+        // 2. Konami Code -> Arcade Mode
+        let konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        let konamiPosition = 0;
+        document.addEventListener('keydown', (e) => {
+            if (e.key === konamiCode[konamiPosition]) {
+                konamiPosition++;
+                if (konamiPosition === konamiCode.length) {
+                    if (typeof Themes !== 'undefined' && !Themes.isUnlocked('arcadeMode')) {
+                        Themes.unlock('arcadeMode');
+                        this.showToast('🕹️ Konami Code Inserido! Modo Arcade Desbloqueado!');
+                        Themes.apply('arcadeMode');
+                    }
+                    konamiPosition = 0;
+                }
+            } else {
+                konamiPosition = 0;
+            }
+        });
+
+        // 3. Espancador de Logo -> Glitch Mode
+        const logos = document.querySelectorAll('.logo, .navbar-brand');
+        let logoClicks = 0;
+        let logoTimer;
+        logos.forEach(logo => {
+            logo.addEventListener('click', (e) => {
+                logoClicks++;
+                clearTimeout(logoTimer);
+                logoTimer = setTimeout(() => logoClicks = 0, 1000);
+                if (logoClicks >= 10) {
+                    e.preventDefault();
+                    if (typeof Themes !== 'undefined' && !Themes.isUnlocked('glitchMode')) {
+                        Themes.unlock('glitchMode');
+                        this.showToast('👾 O sistema foi corrompido... Tema Glitch Desbloqueado!');
+                        Themes.apply('glitchMode');
+                    }
+                    logoClicks = 0;
+                }
+            });
+        });
+
+        // 4. Modo Desenvolvedor -> Developer Mode
+        const footers = document.querySelectorAll('.footer-copyright, footer p, footer');
+        let footerClicks = 0;
+        let footerTimer;
+        footers.forEach(footer => {
+            footer.addEventListener('click', (e) => {
+                footerClicks++;
+                clearTimeout(footerTimer);
+                footerTimer = setTimeout(() => footerClicks = 0, 1500);
+                if (footerClicks >= 5) {
+                    if (typeof Themes !== 'undefined' && !Themes.isUnlocked('developerMode')) {
+                        Themes.unlock('developerMode');
+                        this.showToast('👨‍💻 Console aberto. Tema Developer ativado.');
+                        Themes.apply('developerMode');
+                    }
+                    footerClicks = 0;
+                }
+            });
+        });
     },
 
     /**
@@ -958,6 +1034,10 @@ const Common = {
 
         if (!enabled) {
             Achievements.unlock('safado');
+            if (typeof Themes !== 'undefined' && !Themes.isUnlocked('yandereMode')) {
+                Themes.unlock('yandereMode');
+                setTimeout(() => this.showToast('🔪 Yandere Mode desbloqueado... doce, mas letal.'), 1000);
+            }
         }
 
         this.showToast(enabled ? 'Modo SFW ativado 😇' : 'Modo SFW desativado 😈');
