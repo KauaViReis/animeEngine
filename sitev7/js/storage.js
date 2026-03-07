@@ -222,8 +222,8 @@ const Storage = {
     updateSettings(data) {
         const current = this.getSettings();
         this.set(this.KEYS.SETTINGS, { ...current, ...data });
-        // Trigger theme update if changed
-        if (data.theme && window.Themes) {
+        // Trigger theme update if changed from the current state (prevent infinite loop)
+        if (data.theme && data.theme !== current.theme && window.Themes) {
             window.Themes.apply(data.theme);
         }
     },

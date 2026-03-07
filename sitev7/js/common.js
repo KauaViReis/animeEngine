@@ -918,6 +918,7 @@ const Common = {
      * Pré-visualização temporária do tema
      */
     previewTheme(theme) {
+        if (window.innerWidth <= 768) return; // Desativa hover effect em mobile
         document.documentElement.setAttribute('data-theme', theme);
     },
 
@@ -925,6 +926,7 @@ const Common = {
      * Reseta para o tema original
      */
     resetTheme() {
+        if (window.innerWidth <= 768) return; // Desativa hover effect em mobile
         const settings = Storage.getSettings();
         const savedTheme = localStorage.getItem('animeengine_theme') || settings.theme || 'default';
         document.documentElement.setAttribute('data-theme', savedTheme);
