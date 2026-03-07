@@ -65,6 +65,18 @@ var Themes = window.Themes || {
             icon: '👨‍💻',
             description: 'Royal Blue & Sky Gradient',
             secret: true
+        },
+        johnMode: {
+            name: 'John Mode',
+            icon: '👨🏿',
+            description: 'Coffee & Earth Style',
+            secret: true
+        },
+        bonfinMode: {
+            name: 'Bonfin Mode',
+            icon: '😎',
+            description: 'Vivid Purple Style',
+            secret: true
         }
     },
 
