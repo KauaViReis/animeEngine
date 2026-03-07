@@ -618,7 +618,7 @@ const DetalhesPage = {
             <div class="error-container">
                 <i class="fas fa-exclamation-triangle"></i>
                 <p>${message}</p>
-                <a href="index.html" class="btn btn-primary">Voltar</a>
+                <a href="index.php" class="btn btn-primary">Voltar</a>
             </div>
         `;
     },

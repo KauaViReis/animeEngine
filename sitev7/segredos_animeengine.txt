@@ -1,0 +1,31 @@
+=========================================
+          ANIMEENGINE V7 SECRETS
+=========================================
+
+Para desbloquear um tema, digite o código 
+correspondente na busca da Calculadora:
+
+-----------------------------------------
+CODIGO          | NOME DO TEMA
+-----------------------------------------
+arcadeMode      | Arcade (Retro 8bit)
+benevaMode      | Beneva (Escuro Laranja)
+blueprintMode   | Blueprint (Arquitetura)
+bonfinMode      | Bonfin (Roxo Vívido)
+cyberHacker     | Cyber Hacker (Moderno)
+goldMode        | Gold (Ouro Metálico)
+hollowMode      | Hollow (Mundo Espiritual)
+johnMode        | John (Café & Terra)
+kauaMode        | Kauã (Rainbow Supremo)
+migueliMode     | Migueli (Magenta Deep)
+parafaMode      | ParaFfal (Pink Neon)
+ruanMode        | Ruan (Royal Blue)
+sakuraMode      | Sakura (Cerejeira)
+vaporwaveMode   | Vaporwave (Synthwave)
+vestaMode       | Vesta (Magma)
+xpMode          | Windows XP (Luna Style)
+zenMode         | Zen (Minimalista)
+
+=========================================
+      EXPLORE TODOS OS ESTILOS! 🎨🚀
+=========================================

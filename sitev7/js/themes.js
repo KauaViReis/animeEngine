@@ -77,6 +77,66 @@ var Themes = window.Themes || {
             icon: '😎',
             description: 'Vivid Purple Style',
             secret: true
+        },
+        arcadeMode: {
+            name: 'Arcade Mode',
+            icon: '🕹️',
+            description: '8-bit Retro Style',
+            secret: true
+        },
+        zenMode: {
+            name: 'Zen Mode',
+            icon: '🍃',
+            description: 'Minimalist & Calm',
+            secret: true
+        },
+        goldMode: {
+            name: 'Gold Mode',
+            icon: '🌟',
+            description: 'Metallic Gold & Dark',
+            secret: true
+        },
+        xpMode: {
+            name: 'Xp Mode',
+            icon: '🖥️',
+            description: 'Windows XP Luna Style',
+            secret: true
+        },
+        sakuraMode: {
+            name: 'Sakura Mode',
+            icon: '🌸',
+            description: 'Cherry Blossom Aesthetic',
+            secret: true
+        },
+        cyberHacker: {
+            name: 'Cyber Hacker',
+            icon: '⌨️',
+            description: 'Terminal & Matrix Style',
+            secret: true
+        },
+        vaporwaveMode: {
+            name: 'Vaporwave Mode',
+            icon: '🌅',
+            description: '80s Retro Synthwave',
+            secret: true
+        },
+        vestaMode: {
+            name: 'Vesta Mode',
+            icon: '🌋',
+            description: 'Magma & Lava Style',
+            secret: true
+        },
+        hollowMode: {
+            name: 'Hollow Mode',
+            icon: '🌫️',
+            description: 'Spirit World Aesthetic',
+            secret: true
+        },
+        blueprintMode: {
+            name: 'Blueprint Mode',
+            icon: '📐',
+            description: 'Architecture & Design',
+            secret: true
         }
     },
 
@@ -94,6 +154,17 @@ var Themes = window.Themes || {
             } else {
                 this.apply(saved);
             }
+        }
+    },
+
+    /**
+     * Obter lista de IDs de temas desbloqueados
+     */
+    getUnlockedThemes() {
+        try {
+            return JSON.parse(localStorage.getItem('animeengine_unlocked_themes') || '[]');
+        } catch (e) {
+            return [];
         }
     },
 
@@ -136,6 +207,11 @@ var Themes = window.Themes || {
         document.documentElement.setAttribute('data-theme', themeName);
         this.currentTheme = themeName;
         localStorage.setItem('animeengine_theme', themeName);
+
+        // Sincronizar com o Storage global para evitar bugs de reset
+        if (window.Storage) {
+            Storage.updateSettings({ theme: themeName });
+        }
 
         // Update particles if available
         if (window.Particles && Particles.enabled) {
