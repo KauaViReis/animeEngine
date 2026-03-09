@@ -217,6 +217,54 @@ const Storage = {
     },
 
     // ========================================
+    // EPISODES WATCHED (v7)
+    // ========================================
+    getWatchedEpisodes(animeId) {
+        const key = `watched_eps_${animeId}`;
+        return this.get(key, []);
+    },
+
+    toggleWatchedEpisode(anime, episodeNumber) {
+        const key = `watched_eps_${anime.id}`;
+        let watched = this.get(key, []);
+        const epNum = parseInt(episodeNumber);
+
+        if (watched.includes(epNum)) {
+            watched = watched.filter(n => n !== epNum);
+        } else {
+            watched.push(epNum);
+        }
+
+        this.set(key, watched);
+
+        // Auto-update global progress
+        this.updateProgressFromEpisodes(anime, watched);
+        return watched.includes(epNum);
+    },
+
+    updateProgressFromEpisodes(anime, watched = null) {
+        if (!watched) watched = this.getWatchedEpisodes(anime.id);
+        if (watched.length === 0) return;
+
+        const maxWatched = Math.max(...watched);
+        const status = this.getAnimeStatus(anime.id);
+
+        // Se já está na lista, atualiza o progresso
+        if (status) {
+            const lists = this.getLists();
+            const item = lists[status].find(i => i.id == anime.id);
+            if (item && item.progress < maxWatched) {
+                item.progress = maxWatched;
+                item.updated_at = new Date().toISOString();
+                this.set(this.KEYS.LISTS, lists);
+            }
+        } else {
+            // Se não está em nenhuma lista, adiciona como 'watching' por padrão
+            this.addToList('watching', { ...anime, progress: maxWatched });
+        }
+    },
+
+    // ========================================
     // SETTINGS
     // ========================================
     getSettings() {

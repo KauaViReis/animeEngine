@@ -215,12 +215,51 @@ const DetalhesPage = {
 
                 <!-- EPISODES & FILLERS -->
                 <div class="details-section" id="episodes-section">
-                    <h2 class="section-title"><i class="fas fa-play-circle"></i> Guia de Episódios</h2>
-                    <div class="episodes-status-legend" style="margin-bottom: 10px; font-size: 0.8rem; display: flex; gap: 15px;">
-                        <span><i class="fas fa-square" style="color: #33cc66"></i> Canon</span>
-                        <span><i class="fas fa-square" style="color: #ff3366"></i> Filler</span>
-                        <span><i class="fas fa-square" style="color: #ffd700"></i> Misto</span>
+                    <div class="section-header-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+                        <h2 class="section-title" style="margin: 0;"><i class="fas fa-play-circle"></i> Guia de Episódios</h2>
+                        <div class="episodes-view-toggle">
+                            <button id="btn-grid-view" class="btn-icon active" onclick="DetalhesPage.toggleViewMode('grid')" title="Vista em Grade"><i class="fas fa-th"></i></button>
+                            <button id="btn-list-view" class="btn-icon" onclick="DetalhesPage.toggleViewMode('list')" title="Vista em Lista"><i class="fas fa-list"></i></button>
+                        </div>
                     </div>
+
+                    <!-- Stats & Filters Bar -->
+                    <div class="episodes-toolbox" style="background: var(--color-surface); border: var(--border-width) solid var(--border-color); padding: var(--space-sm); border-radius: 8px; margin-bottom: var(--space-md); box-shadow: var(--shadow-neo);">
+                        <div class="stats-row" style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm); flex-wrap: wrap;">
+                            <div class="filler-meter-container" style="flex-grow: 1; min-width: 200px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 4px;">
+                                    <span>Conteúdo Canon / Filler</span>
+                                    <span id="filler-percent">Calculando...</span>
+                                </div>
+                                <div class="filler-meter-bar" style="height: 8px; background: #eee; border-radius: 4px; overflow: hidden; display: flex;">
+                                    <div id="bar-canon" style="height: 100%; background: #33cc66; width: 0%; transition: width 0.5s;"></div>
+                                    <div id="bar-mixed" style="height: 100%; background: #ffd700; width: 0%; transition: width 0.5s;"></div>
+                                    <div id="bar-filler" style="height: 100%; background: #ff3366; width: 0%; transition: width 0.5s;"></div>
+                                </div>
+                            </div>
+                            <div class="stats-badges" style="display: flex; gap: var(--space-sm);">
+                                <div class="stat-badge" style="background: rgba(51, 204, 102, 0.1); border: 1px solid #33cc66; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem;">
+                                    Canon: <strong id="count-canon">-</strong>
+                                </div>
+                                <div class="stat-badge" style="background: rgba(255, 51, 102, 0.1); border: 1px solid #ff3366; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem;">
+                                    Filler: <strong id="count-filler">-</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
+                            <div class="episodes-filters" style="display: flex; gap: var(--space-xs);">
+                                <button class="filter-btn active" onclick="DetalhesPage.applyFilter('all')">Todos</button>
+                                <button class="filter-btn" onclick="DetalhesPage.applyFilter('canon')">Canon</button>
+                                <button class="filter-btn" onclick="DetalhesPage.applyFilter('filler')">Filler</button>
+                                <button class="filter-btn" onclick="DetalhesPage.applyFilter('mixed')">Misto</button>
+                            </div>
+                            <div class="progress-info" style="font-size: 0.75rem; color: var(--color-text-muted);">
+                                <i class="fas fa-check-circle"></i> <span id="watched-count">0</span> assistidos
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="episodes-grid" id="episodes-grid">
                         <div class="carousel-loading"><div class="loader"></div></div>
                     </div>
@@ -545,26 +584,109 @@ const DetalhesPage = {
             return;
         }
 
+        const watched = Storage.getWatchedEpisodes(this.animeId);
+        let counts = { canon: 0, filler: 0, mixed: 0, total: episodesCount };
         let html = '';
+
         for (let i = 1; i <= episodesCount; i++) {
             let statusClass = '';
+            let type = 'canon'; // Default
+            let title = `Episódio ${i}`;
 
             if (fillerData) {
                 const epInfo = fillerData.find(e => parseInt(e.number) === i);
                 if (epInfo) {
-                    if (epInfo.type === 'filler') statusClass = 'filler';
-                    else if (epInfo.type === 'canon') statusClass = 'canon';
-                    else if (epInfo.type === 'mixed') statusClass = 'mixed';
+                    type = epInfo.type;
+                    statusClass = epInfo.type;
+                    title = epInfo.title || title;
                 }
             }
 
+            // Update stats
+            if (counts[type] !== undefined) counts[type]++;
+            const isWatched = watched.includes(i);
+
             html += `
-                <div class="episode-item ${statusClass}" title="Episódio ${i} ${statusClass ? '(' + statusClass + ')' : ''}">
-                    ${i}
+                <div class="episode-item ${statusClass} ${isWatched ? 'watched' : ''}" 
+                     data-number="${i}" 
+                     data-type="${type}"
+                     title="${title} (${type})"
+                     onclick="DetalhesPage.toggleWatched(${i})">
+                    <span class="ep-number">${i}</span>
+                    <span class="ep-title-hover">${title}</span>
+                    <div class="watched-overlay"><i class="fas fa-check"></i></div>
                 </div>
             `;
         }
         grid.innerHTML = html;
+
+        // Update Stats UI
+        this.updateEpisodesStats(counts, watched.length);
+    },
+
+    updateEpisodesStats(counts, watchedCount) {
+        const totalRaw = counts.total || 1;
+        const pCanon = (counts.canon / totalRaw) * 100;
+        const pFiller = (counts.filler / totalRaw) * 100;
+        const pMixed = (counts.mixed / totalRaw) * 100;
+
+        document.getElementById('bar-canon').style.width = `${pCanon}%`;
+        document.getElementById('bar-filler').style.width = `${pFiller}%`;
+        document.getElementById('bar-mixed').style.width = `${pMixed}%`;
+
+        document.getElementById('count-canon').textContent = counts.canon;
+        document.getElementById('count-filler').textContent = counts.filler;
+        document.getElementById('watched-count').textContent = watchedCount;
+
+        const fillerPercent = Math.round(((counts.filler + counts.mixed) / totalRaw) * 100);
+        document.getElementById('filler-percent').textContent = `${fillerPercent}% Filler`;
+    },
+
+    toggleWatched(number) {
+        const isNowWatched = Storage.toggleWatchedEpisode(this.anime, number);
+        const epElement = document.querySelector(`.episode-item[data-number="${number}"]`);
+
+        if (epElement) {
+            epElement.classList.toggle('watched', isNowWatched);
+        }
+
+        // Update count
+        const watched = Storage.getWatchedEpisodes(this.animeId);
+        document.getElementById('watched-count').textContent = watched.length;
+
+        // Sync with the main status dropdown if applicable
+        this.syncMainProgress(number, isNowWatched);
+    },
+
+    syncMainProgress(number, isWatched) {
+        // This is a subtle UX: if they mark an episode as watched, 
+        // and it's higher than current progress, we could update the UI dropdown info
+        // but the storage is already updated by Storage.toggleWatchedEpisode
+        console.log(`Progresso sincronizado: Ep ${number} (${isWatched ? 'Visto' : 'Desmarcado'})`);
+    },
+
+    applyFilter(type) {
+        // Update buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent.toLowerCase() === type || (type === 'all' && btn.textContent === 'Todos'));
+        });
+
+        const episodes = document.querySelectorAll('.episode-item');
+        episodes.forEach(ep => {
+            if (type === 'all' || ep.getAttribute('data-type') === type) {
+                ep.style.display = 'flex';
+            } else {
+                ep.style.display = 'none';
+            }
+        });
+    },
+
+    toggleViewMode(mode) {
+        const grid = document.getElementById('episodes-grid');
+        grid.classList.toggle('list-mode', mode === 'list');
+
+        document.getElementById('btn-grid-view').classList.toggle('active', mode === 'grid');
+        document.getElementById('btn-list-view').classList.toggle('active', mode === 'list');
     },
 
     // Armazenar dados de personagens para paginação
