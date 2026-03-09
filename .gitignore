@@ -40,3 +40,8 @@ Thumbs.db
 # Outros
 naoSubir/
 miniGamesTeste/
+
+#jsons no cache
+
+sitev7/api/cache/*.json
+sitev7/api/cache/*.txt

@@ -187,7 +187,7 @@
     --shadow-neo-hover: 6px 6px 0 #ff6600;
 }
 
-/* Parafa Mode (ðŸ¥´ Pink Neon Style) */
+/* Parafa Mode (🥴 Pink Neon Style) */
 :root[data-theme="parafaMode"] {
     --color-bg: #0d0008;
     --color-surface: #1a0011;
@@ -201,6 +201,8 @@
     --color-green: #22c55e;
     --color-purple: #d926ff;
 
+    --color-text: #ffffff;
+    /* Added missing color */
     --color-text-muted: #806b77;
     --color-text-light: #604b56;
 
@@ -209,7 +211,8 @@
     --shadow-neo-hover: 6px 6px 0 #ff3399;
 }
 
-/* Migueli Mode (ðŸ§  Magenta Deep Style) */
+
+/* Migueli Mode (🧠 Magenta Deep Style) */
 :root[data-theme="migueliMode"] {
     --color-bg: #08000d;
     --color-surface: #11001a;
@@ -232,28 +235,59 @@
     --shadow-neo-hover: 6px 6px 0 #d926ff;
 }
 
-/* KauÃ£Mode (ðŸ¤– Rainbow Supremo Style) */
+/* Kauã Mode (🤖 Rainbow Supremo Style) */
 :root[data-theme="kauaMode"] {
     --color-bg: #050505;
-    --color-surface: #111111;
+    --color-surface: #101010;
     --color-black: #000000;
     --color-white: #ffffff;
-    --color-on-primary: #ffffff;
+    --color-on-primary: #000000;
 
-    --color-primary: #ff00cc;
-    --color-secondary: #3333ff;
-    --color-blue: #00ccff;
-    --color-green: #33ff33;
-    --color-purple: #cc00ff;
+    --color-primary: #ff0080;
+    --color-secondary: #00ccff;
+    --color-blue: #0066ff;
+    --color-green: #39ff14;
+    --color-purple: #9d00ff;
 
     --color-text: #ffffff;
-    --color-text-muted: #cccccc;
-    --color-text-light: #999999;
+    --color-text-muted: #aaaaaa;
+    --color-text-light: #777777;
 
-    --border-color: #ff00cc;
-    --shadow-neo: 4px 4px 0 #3333ff, -4px -4px 0 #00ccff;
-    --shadow-neo-hover: 6px 6px 0 #ff00cc, -6px -6px 0 #cc00ff;
+    --border-color: #ff0080;
+    --shadow-neo: 4px 4px 0 #00ccff, -4px -4px 0 #9d00ff;
+    --shadow-neo-hover: 0 0 20px rgba(255, 0, 128, 0.8), 0 0 40px rgba(0, 204, 255, 0.4);
+
+    /* Rainbow Animation Tokens */
+    --rainbow-gradient: linear-gradient(90deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff0080, #ff0000);
 }
+
+
+/* Efeito Arco-Íris Real no Título e Logo */
+:root[data-theme="kauaMode"] .logo-text,
+:root[data-theme="kauaMode"] .hero-title,
+:root[data-theme="kauaMode"] .section-title,
+:root[data-theme="kauaMode"] .level-text {
+    background: var(--rainbow-gradient) !important;
+    background-size: 200% auto !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    animation: rainbow-flow 3s linear infinite !important;
+    font-weight: bold;
+}
+
+/* Aplicar animações no Kauã Mode para Header, Nav e Cards */
+:root[data-theme="kauaMode"] .header,
+:root[data-theme="kauaMode"] .sidebar,
+:root[data-theme="kauaMode"] .btn-primary,
+:root[data-theme="kauaMode"] .anime-card:hover {
+    animation: rainbow-border-glow 3s linear infinite;
+    border-width: 3px;
+    border-style: solid;
+}
+
+
+
 
 /* ========================================
    TEMAS GAMIFICADOS & EASTER EGGS
@@ -375,44 +409,40 @@
     --shadow-neo-hover: 6px 6px 0 #ff007f;
 }
 
---color-text-muted: #cccccc;
---color-text-light: #999999;
+/* --- Fim da Seção de Temas Especiais --- */
 
---border-color: #ff00cc;
---shadow-neo: 4px 4px 0 #3333ff,
--4px -4px 0 #00ccff;
---shadow-neo-hover: 6px 6px 0 #ff00cc,
--6px -6px 0 #cc00ff;
-}
-
-/* Rainbow Animation Tokens - High Velocity & Contrast */
---rainbow-gradient: linear-gradient(90deg,
-    #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0000ff, #8000ff, #ff0080, #ff0000);
---rainbow-size: 400% 100%;
-}
 
 /* RuanMode (ðŸ‘¨â€ðŸ’» Royal Blue Style) */
 :root[data-theme="ruanMode"] {
-    --color-bg: #000a1a;
-    --color-surface: #001433;
+    --color-bg: #000814;
+    --color-surface: #00122e;
     --color-black: #000000;
     --color-white: #ffffff;
     --color-on-primary: #ffffff;
 
-    --color-primary: #0066ff;
-    --color-secondary: #00d9ff;
-    --color-blue: #3b82f6;
-    --color-green: #22c55e;
-    --color-purple: #a855f7;
+    --color-primary: #0052D4;
+    --color-secondary: #4364F7;
+    --color-blue: #6FB1FC;
+    --color-green: #00ffcc;
+    --color-purple: #7b2cff;
 
-    --color-text: #e6f2ff;
-    --color-text-muted: #668cb3;
-    --color-text-light: #4d7399;
+    --color-text: #f0f7ff;
+    --color-text-muted: #8ba8cc;
+    --color-text-light: #5c7899;
 
-    --border-color: #002b80;
-    --shadow-neo: 4px 4px 0 #000000;
-    --shadow-neo-hover: 6px 6px 0 #0066ff;
+    --border-color: #0052D4;
+    --shadow-neo: 4px 4px 0 #00122e;
+    --shadow-neo-hover: 0 0 15px rgba(0, 82, 212, 0.8), 0 0 30px rgba(67, 100, 247, 0.4);
 }
+
+/* Efeito Glow no Ruan Mode */
+:root[data-theme="ruanMode"] .header,
+:root[data-theme="ruanMode"] .sidebar,
+:root[data-theme="ruanMode"] .btn-primary {
+    border-color: var(--color-blue);
+    box-shadow: 0 0 10px rgba(0, 82, 212, 0.3);
+}
+
 
 /* JohnMode (ðŸ‘¨ðŸ¿ Coffee & Earth Style) */
 :root[data-theme="johnMode"] {
@@ -437,7 +467,7 @@
     --shadow-neo-hover: 6px 6px 0 #8b4513;
 }
 
-/* BonfinMode (ðŸ˜Ž Vivid Purple Style) */
+/* Bonfin Mode (😎 Vivid Purple Style) */
 :root[data-theme="bonfinMode"] {
     --color-bg: #0d001a;
     --color-surface: #1a0033;
@@ -754,8 +784,14 @@
 :root[data-theme="benevaMode"] input,
 :root[data-theme="benevaMode"] textarea {
     background: #111118;
-    color: #e0e0e8;
+    color: #ffffff;
+    /* Increased from #e0e0e8 */
 }
+
+:root[data-theme="benevaMode"] .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
 
 :root[data-theme="benevaMode"] .btn-primary {
     color: #ffffff;
@@ -833,14 +869,24 @@
     border-color: #05d9e8;
 }
 
+:root[data-theme="cyberpunk"] .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+
 /* Parafa Mode specific overrides */
 :root[data-theme="parafaMode"] .search-input,
 :root[data-theme="parafaMode"] select,
 :root[data-theme="parafaMode"] input,
 :root[data-theme="parafaMode"] textarea {
     background: #1a0011;
-    color: #ffe6f2;
+    color: #ffffff;
 }
+
+:root[data-theme="parafaMode"] .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
 
 :root[data-theme="parafaMode"] .nav-item,
 :root[data-theme="parafaMode"] .icon-btn {
@@ -866,8 +912,13 @@
 :root[data-theme="migueliMode"] input,
 :root[data-theme="migueliMode"] textarea {
     background: #11001a;
-    color: #f2e6ff;
+    color: #ffffff;
 }
+
+:root[data-theme="migueliMode"] .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
 
 :root[data-theme="migueliMode"] .nav-item,
 :root[data-theme="migueliMode"] .icon-btn {
@@ -930,8 +981,8 @@
     -webkit-text-fill-color: transparent;
     animation: rainbow-flow 2.5s linear infinite;
     display: inline-block;
-    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.1));
 }
+
 
 :root[data-theme="kauaMode"] .btn-primary {
     background: var(--rainbow-gradient);
@@ -955,6 +1006,11 @@
     animation: rainbow-flow 2s linear infinite;
 }
 
+:root[data-theme="kauaMode"] .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+
 :root[data-theme="kauaMode"] .anime-card:hover {
     border: 2px solid;
     animation: rainbow-border-glow 3s infinite alternate;
@@ -967,9 +1023,14 @@
 :root[data-theme="ruanMode"] input,
 :root[data-theme="ruanMode"] textarea {
     background: #001433;
-    color: #e6f2ff;
+    color: #ffffff;
     border-color: #0066ff;
 }
+
+:root[data-theme="ruanMode"] .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
 
 :root[data-theme="ruanMode"] .nav-item,
 :root[data-theme="ruanMode"] .icon-btn {
@@ -1001,9 +1062,14 @@
 :root[data-theme="johnMode"] input,
 :root[data-theme="johnMode"] textarea {
     background: #2d1b00;
-    color: #f5e6d3;
+    color: #ffffff;
     border-color: #8b4513;
 }
+
+:root[data-theme="johnMode"] .search-input::placeholder {
+    color: rgba(245, 230, 211, 0.6) !important;
+}
+
 
 :root[data-theme="johnMode"] .nav-item,
 :root[data-theme="johnMode"] .icon-btn {
@@ -1029,9 +1095,14 @@
 :root[data-theme="bonfinMode"] input,
 :root[data-theme="bonfinMode"] textarea {
     background: #1a0033;
-    color: #f2e6ff;
+    color: #ffffff;
     border-color: #9933ff;
 }
+
+:root[data-theme="bonfinMode"] .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
 
 :root[data-theme="bonfinMode"] .nav-item,
 :root[data-theme="bonfinMode"] .icon-btn {
@@ -1379,12 +1450,13 @@
 :root[data-theme="dark"] input,
 :root[data-theme="dark"] textarea {
     background: #1a1a24;
-    color: #f0f0f5;
+    color: #ffffff;
 }
 
 :root[data-theme="dark"] .search-input::placeholder {
-    color: #6b7280;
+    color: rgba(255, 255, 255, 0.6) !important;
 }
+
 
 :root[data-theme="dark"] .btn-primary {
     color: #ffffff;
@@ -1685,11 +1757,12 @@ h6 {
     max-width: 500px;
     display: flex;
     border: var(--border-width) solid var(--border-color);
-    background: var(--color-bg);
-    /* Darker background */
+    background: var(--color-surface);
+    /* Changed from var(--color-bg) for better contrast */
     box-shadow: var(--shadow-neo);
     transition: all 0.2s ease;
 }
+
 
 .search-input {
     flex: 1;
@@ -1703,7 +1776,13 @@ h6 {
     width: 100%;
     /* Garantir largura */
     background: transparent;
+    color: var(--color-text);
+    /* Force inheritance or use theme variable */
+    caret-color: var(--color-primary);
+    /* Visible cursor */
 }
+
+
 
 .search-input::placeholder {
     color: var(--color-text-light);
@@ -3218,8 +3297,10 @@ h6 {
     justify-content: center;
     border: 2px solid var(--border-color);
     background: var(--color-surface);
+    color: var(--color-text);
     cursor: pointer;
 }
+
 
 .modal-close:hover {
     background: var(--color-primary);
