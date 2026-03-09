@@ -217,6 +217,97 @@ const Storage = {
     },
 
     // ========================================
+    // EPISODES WATCHED (v7)
+    // ========================================
+    getWatchedEpisodes(animeId) {
+        const key = `watched_eps_${animeId}`;
+        return this.get(key, []);
+    },
+
+    toggleWatchedEpisode(anime, episodeNumber) {
+        const key = `watched_eps_${anime.id}`;
+        let watched = this.get(key, []);
+        const epNum = parseInt(episodeNumber);
+
+        if (watched.includes(epNum)) {
+            watched = watched.filter(n => n !== epNum);
+        } else {
+            watched.push(epNum);
+        }
+
+        this.set(key, watched);
+
+        // Auto-update global progress
+        this.updateProgressFromEpisodes(anime, watched);
+        return watched.includes(epNum);
+    },
+
+    updateProgressFromEpisodes(anime, watched = null) {
+        if (!watched) watched = this.getWatchedEpisodes(anime.id);
+        const total = anime.episodes || anime.total_episodes || 0;
+        const status = this.getAnimeStatus(anime.id);
+
+        if (watched.length === 0) return;
+
+        const maxWatched = Math.max(...watched);
+        const isAllWatched = total > 0 && watched.length >= total;
+
+        // Se já está na lista, atualiza o progresso
+        if (status) {
+            const lists = this.getLists();
+
+            // Se assistiu tudo e não está como completed, movemos
+            if (isAllWatched && status !== 'completed') {
+                this.addToList('completed', anime);
+                return;
+            }
+
+            // Caso contrário, apenas atualiza o progresso na lista atual
+            const item = lists[status].find(i => i.id == anime.id);
+            if (item && item.progress < maxWatched) {
+                item.progress = maxWatched;
+                item.updated_at = new Date().toISOString();
+                this.set(this.KEYS.LISTS, lists);
+            }
+        } else {
+            // Se não está em nenhuma lista, adiciona como 'watching' ou 'completed'
+            const targetList = isAllWatched ? 'completed' : 'watching';
+            this.addToList(targetList, { ...anime, progress: maxWatched });
+        }
+    },
+
+    markAllEpisodesAsWatched(anime) {
+        const total = anime.episodes || anime.total_episodes || 0;
+        if (total === 0) return;
+
+        const key = `watched_eps_${anime.id}`;
+        const allEpisodes = Array.from({ length: total }, (_, i) => i + 1);
+        this.set(key, allEpisodes);
+
+        // Update progress in the main list
+        this.updateProgressFromEpisodes(anime, allEpisodes);
+    },
+
+    unmarkAllEpisodes(animeId) {
+        const key = `watched_eps_${animeId}`;
+        localStorage.removeItem(key);
+
+        // Reset progress in the list
+        const lists = this.getLists();
+        for (const listName in lists) {
+            if (Array.isArray(lists[listName])) {
+                const item = lists[listName].find(i => i.id == animeId);
+                if (item) {
+                    item.progress = 0;
+                    item.updated_at = new Date().toISOString();
+                    this.set(this.KEYS.LISTS, lists);
+                    break;
+                }
+            }
+        }
+    },
+
+    // ========================================
     // SETTINGS
     // ========================================
     getSettings() {
