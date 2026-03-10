@@ -23,6 +23,9 @@ require_once 'includes/nav.php';
 
         <div class="list-filters">
             <input type="text" class="list-search" id="list-search" placeholder="Buscar na lista...">
+            <a href="tierlist.php" class="btn btn-secondary" style="margin-left: 10px;">
+                <i class="fas fa-trophy"></i> Minha Tier List
+            </a>
         </div>
     </div>
 

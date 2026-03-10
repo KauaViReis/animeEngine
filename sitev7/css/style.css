@@ -58,7 +58,6 @@
 }
 
 /* Cyberpunk Theme (Dark Neon) */
-/* Cyberpunk Theme (Dark Neon) */
 :root[data-theme="cyberpunk"] {
     --color-bg: #050508;
     --color-surface: #0a0a12;
@@ -84,6 +83,41 @@
     --shadow-neo: 4px 4px 0 #ff2a6d;
     --shadow-neo-hover: 6px 6px 0 #05d9e8;
     /* Cyan shadow on hover */
+}
+
+/* Contrast Fixes for Dark Themes */
+[data-theme="cyberpunk"] .quick-filter,
+[data-theme="cyberpunk"] .genre-tag,
+[data-theme="matrix"] .quick-filter,
+[data-theme="matrix"] .genre-tag,
+[data-theme="oledMode"] .quick-filter,
+[data-theme="oledMode"] .genre-tag,
+[data-theme="bloodMoon"] .quick-filter,
+[data-theme="bloodMoon"] .genre-tag,
+[data-theme="glitchMode"] .quick-filter,
+[data-theme="glitchMode"] .genre-tag,
+[data-theme="benevaMode"] .quick-filter,
+[data-theme="benevaMode"] .genre-tag,
+[data-theme="parafaMode"] .quick-filter,
+[data-theme="parafaMode"] .genre-tag,
+[data-theme="migueliMode"] .quick-filter,
+[data-theme="migueliMode"] .genre-tag,
+[data-theme="kauaMode"] .quick-filter,
+[data-theme="kauaMode"] .genre-tag {
+    background: var(--color-surface) !important;
+    color: var(--color-text) !important;
+    border: var(--border-width) solid var(--border-color) !important;
+}
+
+[data-theme="cyberpunk"] .quick-filter.active,
+[data-theme="matrix"] .quick-filter.active,
+[data-theme="oledMode"] .quick-filter.active,
+[data-theme="bloodMoon"] .quick-filter.active,
+[data-theme="glitchMode"] .quick-filter.active,
+[data-theme="benevaMode"] .quick-filter.active,
+[data-theme="kauaMode"] .quick-filter.active {
+    background: var(--color-primary) !important;
+    color: var(--color-on-primary) !important;
 }
 
 /* Manga Theme (Paper Style) */
