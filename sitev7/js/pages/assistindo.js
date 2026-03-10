@@ -189,7 +189,7 @@ const AssistindoPage = {
             // Backend: Apenas atualiza o progresso no "watching"
             try {
                 await fetch('api/lists/update.php', {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ anime_id: animeId, progresso: newProgress })
                 });

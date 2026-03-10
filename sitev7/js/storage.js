@@ -456,7 +456,8 @@ const Storage = {
         return this.get(this.KEYS.SETTINGS, {
             theme: 'default',
             language: 'pt-br', // Default language
-            notifications: true
+            notifications: true,
+            sfw: true
         });
     },
 

@@ -30,8 +30,7 @@ require_once 'includes/nav.php';
             </button>
         </div>
         <div class="calendar-filters">
-            <button class="filter-btn active" data-filter="all"
-                onclick="CalendarioPage.filterDay('all')">Todos</button>
+            <button class="filter-btn active" data-filter="all" onclick="CalendarioPage.filterDay('all')">Todos</button>
             <button class="filter-btn" data-filter="today" onclick="CalendarioPage.filterDay('today')">Hoje</button>
             <button class="filter-btn" data-filter="following"
                 onclick="CalendarioPage.filterDay('following')">Seguindo</button>

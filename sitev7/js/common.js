@@ -1059,14 +1059,10 @@ const Common = {
      * Alternar modo SFW
      */
     toggleSFW(enabled) {
-        const user = Storage.getUser();
-        const settings = user.settings || {};
-        settings.sfw = enabled;
-
-        Storage.updateUser({ settings });
+        Storage.updateSettings({ sfw: enabled });
 
         if (!enabled) {
-            Achievements.unlock('safado');
+            if (typeof Achievements !== 'undefined') Achievements.unlock('safado');
             if (typeof Themes !== 'undefined' && !Themes.isUnlocked('yandereMode')) {
                 Themes.unlock('yandereMode');
                 setTimeout(() => this.showToast('🔪 Yandere Mode desbloqueado... doce, mas letal.'), 1000);

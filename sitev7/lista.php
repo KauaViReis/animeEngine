@@ -20,6 +20,14 @@ require_once 'includes/nav.php';
 <main class="main-content">
     <div class="page-header">
         <h1 class="page-title"><i class="fas fa-list"></i> Biblioteca (Kanban)</h1>
+        <?php if (estaLogado()):
+            $u = getUsuarioLogado();
+            ?>
+            <span
+                style="background: var(--color-primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-left: 15px;">
+                Logado como: <strong><?php echo $u['username']; ?></strong> (ID: <?php echo $u['id']; ?>)
+            </span>
+        <?php endif; ?>
 
         <div class="list-filters">
             <input type="text" class="list-search" id="list-search" placeholder="Buscar na lista...">

@@ -19,6 +19,14 @@ require_once 'includes/nav.php';
 <main class="main-content">
     <div class="page-header">
         <h1 class="page-title"><i class="fas fa-play-circle"></i> Assistindo Agora</h1>
+        <?php if (estaLogado()):
+            $u = getUsuarioLogado();
+            ?>
+            <span
+                style="background: var(--color-primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-left: 15px;">
+                ID: <?php echo $u['id']; ?> (<?php echo $u['username']; ?>)
+            </span>
+        <?php endif; ?>
     </div>
 
     <div class="watching-grid" id="watching-grid">
@@ -197,10 +205,12 @@ require_once 'includes/nav.php';
             padding: 10px;
             gap: 15px;
         }
+
         .watching-image {
             width: 80px;
             height: 110px;
         }
+
         .page-title {
             font-size: 1.8rem;
         }
