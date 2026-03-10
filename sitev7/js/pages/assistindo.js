@@ -56,30 +56,30 @@ const AssistindoPage = {
                     <div class="watching-info">
                         <h3 class="watching-title">${anime.titulo}</h3>
                         
-                        <div class="watching-progress">
-                            <span id="progress-text-${anime.anime_id}">Episódio ${current} ${total ? `/ ${total}` : ''}</span>
-                            <span id="percent-text-${anime.anime_id}">${percent}%</span>
-                        </div>
-                        
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill-${anime.anime_id}" style="width: ${percent}%"></div>
+                        <div class="watching-progress-info">
+                            <div class="watching-meta">
+                                <span id="progress-text-${anime.anime_id}">Episódio ${current} ${total ? `/ ${total}` : ''}</span>
+                                <span id="percent-text-${anime.anime_id}">${percent}%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="progress-fill-${anime.anime_id}" style="width: ${percent}%"></div>
+                            </div>
                         </div>
                         
                         <div class="episode-controls">
                             <!-- Minus Button -->
-                            <button class="btn-mini" onclick="event.stopPropagation(); AssistindoPage.updateProgress(${anime.anime_id}, -1, ${total})">
+                            <button class="btn-control" onclick="event.stopPropagation(); AssistindoPage.updateProgress(${anime.anime_id}, -1, ${total})" title="Diminuir">
                                 <i class="fas fa-minus"></i>
                             </button>
                             
                             <!-- Display / Edit -->
-                            <div class="episode-display" onclick="event.stopPropagation(); AssistindoPage.openEditModal(${anime.anime_id}, '${anime.titulo.replace(/'/g, "\\'")}', ${current}, ${total})">
-                                <span class="current-ep" id="display-curr-${anime.anime_id}">${current}</span>
-                                <span class="total-ep">/ ${total || '?'}</span>
-                                <i class="fas fa-edit edit-icon"></i>
+                            <div class="episode-number" onclick="event.stopPropagation(); AssistindoPage.openEditModal(${anime.anime_id}, '${anime.titulo.replace(/'/g, "\\'")}', ${current}, ${total})">
+                                <span id="display-curr-${anime.anime_id}">${current}</span>
+                                <span style="opacity: 0.5; font-size: 0.8em; margin-left: 4px;">/ ${total || '?'}</span>
                             </div>
                             
                             <!-- Plus Button -->
-                            <button class="btn-mini" onclick="event.stopPropagation(); AssistindoPage.updateProgress(${anime.anime_id}, 1, ${total})">
+                            <button class="btn-control" onclick="event.stopPropagation(); AssistindoPage.updateProgress(${anime.anime_id}, 1, ${total})" title="Aumentar">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>

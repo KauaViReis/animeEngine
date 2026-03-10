@@ -66,13 +66,13 @@ while ($row = mysqli_fetch_assoc($result)) {
         'adicionado_em' => $row['adicionado_em'],
         'atualizado_em' => $row['atualizado_em']
     ];
-    
+
     // Adicionar à lista correspondente
     $tipo = $row['tipo_lista'];
     if (isset($lists[$tipo])) {
         $lists[$tipo][] = $anime;
     }
-    
+
     // Se for favorito, adicionar também à lista de favoritos
     if ($row['favorito']) {
         $lists['favorites'][] = $anime;
@@ -81,5 +81,5 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 mysqli_close($conn);
 
-jsonResponse(['lists' => $lists]);
+jsonSuccess('Listas recuperadas', ['lists' => $lists]);
 

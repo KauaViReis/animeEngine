@@ -1121,14 +1121,25 @@ const DetalhesPage = {
 
 
     async toggleFavorite() {
-        const wasFav = Storage.isFavorite(this.anime.id);
+        const animeId = this.anime.id || this.anime.anime_id;
+        const currentStatus = Storage.getAnimeStatus(animeId);
+
+        // If not in any list, we must add it to a list first because the 
+        // SQL table 'listas_anime' requires an entry to store the 'favorito' flag.
+        if (!currentStatus) {
+            await Storage.addToList('planToWatch', this.anime);
+            // Storage.addToList already syncs with backend, including adding the item.
+            // Now we can toggle favorite.
+        }
+
+        const wasFav = Storage.isFavorite(animeId);
         Storage.toggleFavorite(this.anime);
 
         if (!wasFav) {
             Storage.addXP(5);
-            Common.showNotification(`"${this.anime.title}" favoritado!`);
+            Common.showNotification(`"${this.anime.title.romaji || this.anime.title}" favoritado!`);
         } else {
-            Common.showNotification(`"${this.anime.title}" removido dos favoritos`);
+            Common.showNotification(`"${this.anime.title.romaji || this.anime.title}" removido dos favoritos`);
         }
 
         Common.updateLevelBadge();

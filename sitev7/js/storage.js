@@ -270,20 +270,34 @@ const Storage = {
 
     toggleFavorite(anime) {
         let favs = this.getFavorites();
-        const existingIndex = favs.findIndex(f => f.id == anime.id);
+        const animeId = anime.id || anime.anime_id;
+        const existingIndex = favs.findIndex(f => f.id == animeId);
+        let isFavorite = false;
 
         if (existingIndex >= 0) {
             favs.splice(existingIndex, 1);
+            isFavorite = false;
         } else {
             favs.push({
-                id: anime.id,
-                title: anime.title,
-                image: anime.image,
+                id: animeId,
+                title: anime.title?.romaji || anime.title,
+                image: anime.image || anime.coverImage?.large,
                 added_at: new Date().toISOString()
             });
+            isFavorite = true;
         }
 
         this.set('animeengine_favorites_v6', favs);
+
+        // Sync with backend
+        fetch('api/lists/update.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                anime_id: animeId,
+                favorito: isFavorite ? 1 : 0
+            })
+        }).catch(e => console.error('Sync Error (Favorite):', e));
     },
 
     // ========================================

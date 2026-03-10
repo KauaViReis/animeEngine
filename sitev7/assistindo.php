@@ -38,170 +38,171 @@ require_once 'includes/nav.php';
 </main>
 
 <style>
+    .page-header {
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        border-bottom: var(--border-width) solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-family: var(--font-display);
+        font-size: 2.5rem;
+        text-transform: uppercase;
+        margin: 0;
+        text-shadow: 2px 2px 0 var(--color-primary);
+    }
+
     .watching-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
     }
 
     .watching-card {
-        display: flex;
-        gap: 15px;
         background: var(--color-surface);
-        border-radius: 12px;
+        border: var(--border-width) solid var(--border-color);
+        box-shadow: var(--shadow-neo);
         padding: 15px;
+        display: flex;
+        gap: 20px;
+        transition: all var(--transition-fast);
         cursor: pointer;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
+        position: relative;
     }
 
     .watching-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: var(--shadow-neo-hover);
         border-color: var(--color-primary);
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
     .watching-image {
-        width: 80px;
+        width: 100px;
+        height: 140px;
         flex-shrink: 0;
+        border: var(--border-width) solid var(--border-color);
+        overflow: hidden;
     }
 
     .watching-image img {
         width: 100%;
-        border-radius: 8px;
+        height: 100%;
+        object-fit: cover;
     }
 
     .watching-info {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        justify-content: space-between;
     }
 
     .watching-title {
-        font-size: 1rem;
-        font-weight: 700;
+        font-family: var(--font-body);
+        font-size: 1.1rem;
+        font-weight: 800;
         margin: 0;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        line-height: 1.2;
     }
 
-    .watching-progress {
+    .watching-progress-info {
+        margin: 10px 0;
+    }
+
+    .watching-meta {
         display: flex;
         justify-content: space-between;
         font-size: 0.85rem;
-        color: var(--color-text-muted);
+        font-weight: 700;
+        margin-bottom: 5px;
+        font-family: var(--font-body);
     }
 
-    .progress-bar {
-        height: 6px;
+    .progress-track {
+        height: 12px;
         background: var(--color-bg);
-        border-radius: 3px;
+        border: 2px solid var(--border-color);
         overflow: hidden;
     }
 
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--color-primary), #00d4ff);
-        border-radius: 3px;
-        transition: width 0.3s ease;
+        background: var(--color-primary);
+        border-right: 2px solid var(--border-color);
+        transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .episode-controls {
         display: flex;
         align-items: center;
-        gap: 5px;
-        /* Reduced gap */
-        margin-top: auto;
-        background: var(--color-bg);
-        padding: 5px;
-        border-radius: 25px;
-        overflow: hidden;
-        /* Contain */
+        gap: 8px;
+        margin-top: 5px;
     }
 
-    .btn-mini {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: none;
-        background: var(--color-surface);
-        color: var(--color-text);
+    .btn-control {
+        width: 36px;
+        height: 36px;
+        border: 2px solid var(--border-color);
+        background: var(--color-secondary);
+        color: var(--color-black);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        flex-shrink: 0;
-        /* Important: Don't shrink */
+        font-weight: 900;
+        box-shadow: 2px 2px 0 var(--border-color);
+        transition: all var(--transition-fast);
     }
 
-    .btn-mini:hover {
+    .btn-control:hover {
+        transform: translate(-1px, -1px);
+        box-shadow: 3px 3px 0 var(--border-color);
         background: var(--color-primary);
-        color: white;
-        transform: scale(1.1);
+        color: var(--color-white);
     }
 
-    .episode-display {
+    .episode-number {
         flex: 1;
         text-align: center;
-        font-weight: 700;
-        font-size: 0.9rem;
-        cursor: pointer;
-        padding: 4px 8px;
-        border-radius: 12px;
-        transition: background 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-    }
-
-    .episode-display:hover {
-        background: rgba(var(--color-primary-rgb), 0.1);
-        color: var(--color-primary);
-    }
-
-    .edit-icon {
-        font-size: 0.7rem;
-        opacity: 0;
-        transition: opacity 0.2s;
-    }
-
-    .episode-display:hover .edit-icon {
-        opacity: 1;
-    }
-
-    /* Modal Styles */
-    .edit-ep-modal {
-        text-align: center;
-    }
-
-    .input-group {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-        justify-content: center;
-    }
-
-    #ep-input {
-        width: 80px;
-        padding: 8px;
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: bold;
+        font-family: var(--font-display);
+        font-size: 1rem;
         background: var(--color-bg);
-        color: var(--color-text);
+        border: 2px solid var(--border-color);
+        padding: 4px;
+    }
+
+    .empty-state {
+        background: var(--color-surface);
+        border: var(--border-width) solid var(--border-color);
+        box-shadow: var(--shadow-neo);
+        padding: 50px;
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
     }
 
     @media (max-width: 600px) {
-        .watching-grid {
-            grid-template-columns: 1fr;
+        .watching-card {
+            padding: 10px;
+            gap: 15px;
+        }
+        .watching-image {
+            width: 80px;
+            height: 110px;
+        }
+        .page-title {
+            font-size: 1.8rem;
         }
     }
 </style>
